@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Resources:
+  RoleApi:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-RoleApi'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      Policies:
+        - PolicyName: AssumeRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - 'sts:AssumeRole'
+                Effect: Allow
+                Resource: '*'  
+
+  MyApi:
+    Type: 'AWS::Serverless::Api'
+    Properties:
+      Name: !Sub '${AWS::StackName}-MyApi'
+      StageName: Prod
+      Cors: '''*'''
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: TestAPI
+        paths:
+          /:
+            get:
+              produces:
+              - application/json
+              responses:
+                '201':
+                  description: 201 response
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: string
+                '500':
+                  description: 500 response
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: string
+              security:
+              - MyCognitoAuthorizer: []
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                responses:
+                  default:
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: '''*'''
+                    statusCode: 201
+                type: aws_proxy
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction.Arn}/invocations'
+            options:
+              consumes:
+              - application/json
+              description: 'Enable CORS by returning correct headers'
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: Default response for CORS method
+                  headers:
+                    Access-Control-Allow-Headers:
+                      type: string
+                    Access-Control-Allow-Methods:
+                      type: string
+                    Access-Control-Allow-Origin:
+                      type: string
+              security:
+              - NONE: []
+              summary: CORS support
+              tags:
+              - CORS
+              x-amazon-apigateway-integration:
+                requestTemplates:
+                  application/json: "{\n  \"statusCode\" : 200\n}\n"
+                responses:
+                  default:
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key'''
+                      method.response.header.Access-Control-Allow-Methods: '''*'''
+                      method.response.header.Access-Control-Allow-Origin: '''*'''
+                    responseTemplates:
+                      application/json: '{}'
+                    statusCode: '200'
+                type: mock
+            post:
+              produces:
+              - application/json
+              responses:
+                '201':
+                  description: 201 response
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: string
+                '500':
+                  description: 500 response
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: string
+              security:
+              - MyCognitoAuthorizer: []
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                responses:
+                  default:
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: '''*'''
+                    statusCode: 201
+                type: aws_proxy
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyFunction.Arn}/invocations'
+        
+        x-amazon-apigateway-gateway-responses:
+          DEFAULT_4XX:
+            responseParameters:
+              gatewayresponse.header.Access-Control-Allow-Headers: '''Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'''
+              gatewayresponse.header.Access-Control-Allow-Methods: '''DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'''
+              gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: '{"message":$context.error.messageString}'
+          DEFAULT_5XX:
+            responseParameters:
+              gatewayresponse.header.Access-Control-Allow-Headers: '''Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'''
+              gatewayresponse.header.Access-Control-Allow-Methods: '''DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'''
+              gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+            responseTemplates:
+              application/json: '{"message":$context.error.messageString}'
+            
+  MyFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: s3://uvic-bcwave/lambda/function/s3netcdfapi.zip
+      Handler: index.handler
+      MemorySize: 128
+      Runtime: python3.8
+      Timeout: 300
+      Environment:
+      - AWS_BUCKETNAME: "uvic-bcwave"
+      - AWS_DEFAULTMODEL: "BCSWANv5"
+      Role: !GetAtt RoleApi.Arn
+      Layers:
+        - !Sub "arn:aws:lambda:${AWS::Region}:420165488524:layer:AWSLambda-Python38-SciPy1x:14"
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: MyApi
+            Path: /
+            Method: GET
+        Post:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: MyApi
+            Path: /
+            Method: POST
+      Description: ''    
+
+
+
+Outputs:
+  AWSAPI:
+    Description: "API Prod stage endpoint"
+    Value: !Sub "https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

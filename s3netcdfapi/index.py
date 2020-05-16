@@ -7,7 +7,7 @@ from save import save,response
 
 def handler(event, context):
   try:
-    parameters = event['parameters']
+    parameters = event.get('queryStringParameters',{})
     credentials = checkCredentials(event)
     return query(parameters,credentials)
     
