@@ -7,7 +7,9 @@ from save import save,response
 
 def handler(event, context):
   try:
-    parameters = event.get('queryStringParameters',{})
+    parameters = event['queryStringParameters']
+    if parameters is None:parameters={}
+    
     credentials = checkCredentials(event)
     return query(parameters,credentials)
     
@@ -36,16 +38,21 @@ def checkCredentials(event):
     return {}
   
 def query(parameters,credentials):
+  
   id = parameters.pop("id",os.environ["AWS_DEFAULTMODEL"])
   Bucket=parameters.pop("bucket",os.environ['AWS_BUCKETNAME'])
   
   s3 = boto3.client('s3',**credentials)
-  s3.head_object(Bucket=Bucket, Key=id)
-
-  netcdf2d=NetCDF2D({"name":id,"bucket":Bucket,"localOnly":False})
+  key="{0}/{0}.nca".format(id)
+  
+  s3.head_object(Bucket=Bucket, Key=key)
+  
+  netcdf2d=NetCDF2D({"name":id,"bucket":Bucket,"localOnly":False,"cacheLocation":"/tmp"})
+  
   meta=netcdf2d.meta()
+  
   var=parameters.get('variable',None)
-  if var is None:return response("text/json",json.dumps(meta)) 
+  if var is None:return response("application/json",json.dumps(meta)) 
   
   format= parameters.pop('format',"json")
   data={}
