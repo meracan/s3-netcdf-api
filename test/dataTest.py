@@ -36,7 +36,7 @@ variables={
   "TM01":{"Tm01":np.arange(nshape,dtype="f4").reshape(shape),},
   "TM02":{"Tm02":np.arange(nshape,dtype="f4").reshape(shape),},
  
-  "PDIR":{"Pdir":np.arange(nshape,dtype="f4").reshape(shape),},
+  "PDIR":{"PkDir":np.arange(nshape,dtype="f4").reshape(shape),},
   "DSPR":{"Dspr":np.arange(nshape,dtype="f4").reshape(shape),},
   "QP":{"Qp":np.arange(nshape,dtype="f4").reshape(shape),},
   "TRANSP":{"Transp_x":np.arange(nshape,dtype="f4").reshape(shape),"Transp_y":np.arange(nshape,dtype="f4").reshape(shape),}
@@ -61,6 +61,7 @@ stations={
     "hotspots": 2,
     "line_n": 2,
     "line_w": 3,
+    "line_s": 2,
     "m_nomad": 1,
     "n_hecat": 1,
     "ne_isle": 1,
