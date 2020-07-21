@@ -95,8 +95,21 @@ def saveNetCDF(data):
   # create temporary file
   with Dataset('_.nc', 'w', format='NETCDF4') as nc:
     for var in data:
-      nc.createDimension(var, len(data[var]))
-      nc.createVariable(var,'f4', (var,))
+
+      if len(data[var].shape) == 2:
+        i=0
+        for var2 in data[var]:
+          var_name = var+"_"+str(i)
+          nc.createDimension(var_name, len(var2))
+          nc_var = nc.createVariable(var_name, 'f4', (var_name,))
+          nc_var[:] = var2
+          i+=1
+          #print(nc_var[:])
+      else:
+        nc.createDimension(var, len(data[var]))
+        nc_var = nc.createVariable(var, 'f4', (var,))
+        nc_var[:] = data[var]
+        #print(nc_var[:])
 
   # read file, then delete
   nc = Dataset('_.nc', 'r')
