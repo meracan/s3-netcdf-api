@@ -25,7 +25,7 @@ data_.append({"hs": swan["s", "hs", 0:3, 4]})  # nodes 0-2, time 4
 data_.append({"hs": swan["t", "hs", 4, 0:3]})  # time 4, nodes 0-2
 
 data_.append({"spc": swan["spc", "spectra", 1, 0, 0]})  # station 1 (brooks) node 0 time 0
-data_.append({"spc": swan["spc", "spectra", 0, 0, 0:2]})  # station 0 (beverly) node 0 times 0-2
+#data_.append({"spc": swan["spc", "spectra", 0, 0, 0:2]})  # station 0 (beverly) node 0 times 0-2
 
 
 def test_JSON():
@@ -49,6 +49,7 @@ def test_JSON():
 
 
 def test_csv():
+  # 2009-01-05_130000, hs, -120.3, 36.4, 9.02155
   check_data = [
   ]
   for i, d in enumerate(data_):
@@ -84,9 +85,13 @@ def test_Binary():
   # not quite working...
   swan=NetCDF2D({"name":"test1","bucket":"uvic-bcwave","localOnly":True,"cacheLocation":"../../s3"})
   data={
-    "bed":swan["nodes","bed"]  
+    "variables":{
+      "bed": swan["nodes","bed", :]
+    }
   }
-  body=saveBinary(data)
+  body=saveBinary(data) # <--- error
+  print("test_Binary:", type(body))
+
   body=base64.b64decode(body)
   checkData=binarypy.read(body)
   np.testing.assert_array_equal(checkData['bed'], np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]))
@@ -136,7 +141,8 @@ def test_netCDF():
   ]
   for i, d in enumerate(data_):
     nc_body = saveNetCDF(d)
-    #print(f"{nc_body}")
+    print(f"{nc_body}")
+    print("---------------------------------")
     # need to test/check values
 
 

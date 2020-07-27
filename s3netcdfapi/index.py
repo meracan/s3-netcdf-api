@@ -62,9 +62,49 @@ def query(parameters,credentials):
     data['elem']=netcdf2d.query({"group":"elem","variable":"elem"})
     data['x']=netcdf2d.query({"group":"node","variable":"lon"})
     data['y']=netcdf2d.query({"group":"node","variable":"lat"})
+
   if var!="mesh":
     # Get data using name of variable
+    if format == "geojson":
+      # needs start and end nodes and times?
+      xdata = netcdf2d.query({"group": "node", "variable": "lon"})
+      ydata = netcdf2d.query({"group": "node", "variable": "lat"})
+      zdata = netcdf2d.query({"group": "node", "variable": "bed"})
+      tdata = netcdf2d.query({"group": "time", "variable": "time"})
+
+      # 'node' and 'time' is a string or tuple?
+      nodes = parameters.get('node', None)
+      times = parameters.get('time', None)
+
+      """
+      # depends on what type the 'node' and 'time' parameters are
+      data['x'] = xdata[nodes[0]:nodes[1]]
+      data['y'] = ydata[nodes[0]:nodes[1]]
+      data['z'] = zdata[nodes[0]:nodes[1]]
+      data['times'] = tdata[times[0]:times[1]]
+      data['parameter'] = var
+      """
+
+    if format == "csv":
+
+      xdata = netcdf2d.query({"group": "node", "variable": "lon"})
+      ydata = netcdf2d.query({"group": "node", "variable": "lat"})
+
+      nodes = parameters.get('node')
+      times = parameters.get('time')
+
+      """
+      if nodes is not None and len(nodes) == 1: nodes =
+      if times is not None and len(times) == 1: times =
+
+      data['times'] =
+      data['parameter'] = var
+      data['lons'] =
+      data['lats'] =
+      """
+
     data[var]=netcdf2d.query(parameters)
+
     
   return save(format,data)
 

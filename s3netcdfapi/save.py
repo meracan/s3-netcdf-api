@@ -17,6 +17,7 @@ def saveJSON(data):
     data[var] = data[var].tolist() # assumes data[var] is a numpy.ndarray
   return json.dumps(data)
 
+
 def saveGeoJSON(data):
   """
   A GeoJSON object represents a Geometry, Feature, or collection of
@@ -26,6 +27,8 @@ def saveGeoJSON(data):
 
   Data is assumed to have the necessary information and is organized?
   """
+  # data has 'x', 'y', 'z', 'time', 'parameter
+
   geojson = {
     "type": "FeatureCollection",
     "features": [
@@ -49,6 +52,8 @@ def saveCSV(data):
   """
   NEEDS FIXING
   basic structure:
+
+  probably not multi dimensional?
 
   "s"
         n2   n3   n4   n5   n6
@@ -135,7 +140,7 @@ def saveSLF(data):
 
 def saveShapefile(data):
   None
-  
+
 def save(format,data):
   if format=="json":return response("application/json",False,saveJSON(data))
   if format=="geojson":return response("",False,saveGeoJSON(data))
