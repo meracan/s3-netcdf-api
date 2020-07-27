@@ -2,19 +2,18 @@ FOLDER=/home/ec2-user/environment
 FUNCTIONARN=arn:aws:lambda:us-west-2:440480703237:function:tests3netcdfapi-MyFunction-8445GG2UE18J
 ZIPFILE=s3netcdfapi.zip
 
+
+aws s3 cp s3://$AWS_BUCKETNAME/lambda/function/s3netcdfapi.base.zip ./$ZIPFILE
+
 rm -R lambda
 mkdir lambda
 cd lambda
 cp -r $FOLDER/s3-netcdf-api/s3netcdfapi/*.py .
 
-pip install --no-deps -t . netcdf4
-pip install --no-deps -t . cftime
-pip install --no-deps -t . $FOLDER/binary-py
-pip install --no-deps -t . $FOLDER/s3-netcdf
- 
 rm -R ./*dist-info
 
 find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
+
 zip -r ../$ZIPFILE *
 
 aws s3 cp ../$ZIPFILE s3://$AWS_BUCKETNAME/lambda/function/$ZIPFILE
