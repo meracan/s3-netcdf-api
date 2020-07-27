@@ -103,7 +103,7 @@ def test_geoJSON():
   # assumptions about the data
   node_start, node_end, t_start, t_end = 8, 9, 3, 7
 
-  # taken from index.py?
+  # these would be 'taken' from index.py
   data = {}
   data['x'] = swan["nodes", "lon", :]
   data['y'] = swan["nodes", "lat", :]

@@ -11,6 +11,13 @@ from scipy.io import loadmat, savemat
 from netCDF4 import Dataset
 
 
+def jsontest2(data):
+  for var in data:
+    #data[var] = list(data[var])
+    data[var] = data[var].tolist() # assumes data[var] is a numpy.ndarray
+  return json.dumps(data)
+
+
 def saveJSON(data):
   for var in data:
     #data[var] = list(data[var])
@@ -142,6 +149,8 @@ def saveShapefile(data):
   None
 
 def save(format,data):
+  if format=="jsontest2": return response("application/json",False,jsontest2(data))
+
   if format=="json":return response("application/json",False,saveJSON(data))
   if format=="geojson":return response("",False,saveGeoJSON(data))
   if format=="csv":return response("",False,saveCSV(data))
