@@ -50,11 +50,36 @@ def test_JSON():
 
 def test_csv():
   # 2009-01-05_130000, hs, -120.3, 36.4, 9.02155
-  check_data = [
-  ]
-  for i, d in enumerate(data_):
-    csv_body = saveCSV(d)
-    #assert csv_body == check_data[i]
+  data = {}
+
+  #----------------------------
+
+  #var = "hs"
+  #data[var] = swan["s", "hs", 5:8, 4:9]
+  #data['t_indices'], data['n_indices'] = "5:8", "4:9"
+
+  #var = "hs"
+  #data[var] = swan["t", "hs", 4:9, 5:8]
+  #data['t_indices'], data['n_indices'] = "4:9", "5:8"
+
+  #var = "lon"
+  #data[var] = swan["nodes", "lon", :]
+  #data['t_indices'], data['n_indices'] = None, None
+
+  var = "spectra"
+  data[var] = swan["spc", "spectra", 3, 1, 6] # station 3, node 1, time 6
+  data['t_indices'], data['n_indices'] = "6", "1"
+  # ----------------------------
+
+  data['parameter'] = var
+  data['lons'] = swan["nodes", "lon", :]
+  data['lats'] = swan["nodes", "lat", :]
+  data['times'] = swan["time", "time", :]
+
+  csv_body = saveCSV(data)
+
+  print(csv_body)
+
 
   print("(test_csv passed)")
 
@@ -98,42 +123,41 @@ def test_Binary():
   
 
 def test_geoJSON():
-  # !!! this approach needs to be changed
-
-  # assumptions about the data
-  node_start, node_end, t_start, t_end = 8, 9, 3, 7
 
   # these would be 'taken' from index.py
   data = {}
-  data['x'] = swan["nodes", "lon", :]
-  data['y'] = swan["nodes", "lat", :]
-  data['z'] = swan["nodes", "bed", :]
-  data['time'] = swan["time", "time", :]
 
-  if abs(node_start-node_end) <= 1:
-    data['coords'] = [
-      [data['x'][node_start],
-       data['y'][node_start],
-       data['z'][node_start],
-       str(t)] for t in data['time'][t_start:t_end]
-    ]
-    data['values'] = swan["s", "hs", node_start, t_start:t_end].tolist()
-  elif abs(t_start-t_end) <= 1:
-    data['coords'] = [
-      [data['x'][n],
-       data['y'][n],
-       data['z'][n],
-       str(data['time'][t_start])] for n in range(node_start, node_end)
-    ]
-    data['values'] = swan["s", "hs", node_start:node_end, t_start].tolist()
+  # ----------------------------
 
-  data['parameter'] = "hs"
+  #var = "hs"
+  #data[var] = swan["s", "hs", 5, 4]
+  #data['t_indices'], data['n_indices'] = "5", "4"
+
+  var = "lon"
+  data[var] = swan["nodes", "lon", :]
+  data['t_indices'], data['n_indices'] = None, None
+
+  # var = "hs"
+  # data[var] = swan["s", "hs", 5:7, 4:8]
+  # data['t_indices'], data['n_indices'] = "5:7", "4:8"
+
+  # var = "hs"
+  # data[var] = swan["s", "hs", 1, 4:8]
+  # data['t_indices'], data['n_indices'] = "[1]", "4:8"
+
+  # ----------------------------
+
+  data['parameter'] = var
+  data['lons'] = swan["nodes", "lon", :]
+  data['lats'] = swan["nodes", "lat", :]
+  data['bath'] = swan["nodes", "bed", :]
+  data['times'] = swan["time", "time", :]
 
   body = saveGeoJSON(data)
 
   pp.pprint(body)
 
-  print("(test_geoJSON passed)")
+  print("\n(test_geoJSON passed)")
 
 
 def test_netCDF():

@@ -2,17 +2,15 @@ FOLDER=~/Desktop/Jan2020/PRIMED
 FUNCTIONARN=arn:aws:lambda:us-west-2:440480703237:function:tests3netcdfapi-MyFunction-8445GG2UE18J
 ZIPFILE=s3netcdfapi.zip
 
+aws s3 cp s3://$AWS_BUCKETNAME/lambda/function/s3netcdfapi.base.zip ./$ZIPFILE
+
 rm -R lambda
 mkdir lambda
 cd lambda
 cp -r ~/PycharmProjects/MARACAN/s3-netcdf-api/s3netcdfapi/*.py .
 
-pip install --no-deps -t . netcdf4
-pip install --no-deps -t . cftime
-pip install --no-deps -t . $FOLDER/binary-py
-pip install --no-deps -t . $FOLDER/s3-netcdf
-cp -r ./netCDF4/.dylibs ./netCDF4.libs
- 
+
+
 rm -R ./*dist-info
 
 find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf

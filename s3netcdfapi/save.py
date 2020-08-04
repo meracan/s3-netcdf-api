@@ -3,12 +3,41 @@ import binarypy
 import base64
 #import shapefile as shf
 import numpy as np
-#import csv
 import os
 from io import BytesIO as bio
 #from io import StringIO as sio
 from scipy.io import loadmat, savemat
 from netCDF4 import Dataset
+import re
+#import pprint as pp
+
+"""
+data[var] structure:
+
+  one node
+        n2
+    [ [13.],  t2
+      [14.],  t3
+      [15.],  t4
+      [16.],  t5
+      [17.]   t6
+    ]
+
+  one timestep
+       n2   n3   n4
+    [ [3., 13., 23.]  t2
+    ]
+
+  multiple nodes/timesteps
+        n2   n3   n4
+    [ [ 3., 13., 23.],  t2
+      [ 4., 14., 24.],  t3
+      [ 5., 15., 25.],  t4
+      [ 6., 16., 26.],  t5
+      [ 7., 17., 27.]   t6
+    ]
+    
+"""
 
 
 def jsontest2(data):
@@ -25,6 +54,25 @@ def saveJSON(data):
   return json.dumps(data)
 
 
+# helper function for csv and geojson
+def get_index_list(index_string, length):
+  s, e = 0, length
+  ilist = list(range(s, e))
+  if index_string is not None:
+    if "[" in index_string:
+      ilist = json.loads(index_string)
+    else:
+      i_i = [int(i) if i != '' else i for i in re.split(':', index_string)]
+      if len(i_i) == 1:
+        ilist = list(range(int(i_i[0]), int(i_i[0] + 1)))
+      else:
+        if i_i[0] != '': s = int(i_i[0])
+        if i_i[1] != '': e = int(i_i[1])
+        ilist = list(range(s, e))
+
+  return ilist
+
+
 def saveGeoJSON(data):
   """
   A GeoJSON object represents a Geometry, Feature, or collection of
@@ -32,67 +80,164 @@ def saveGeoJSON(data):
    the member MUST be one of the GeoJSON types.
   Every feature has a geometry property and a properties property.
 
-  Data is assumed to have the necessary information and is organized?
-  """
-  # data has 'x', 'y', 'z', 'time', 'parameter
+  If data[var] is multidimensional, each timestep in 'times' corresponds with an inner list in 'values'.
+  Each datum in that 'values' timestep corresponds with one of the 'coordinates'.
 
-  geojson = {
-    "type": "FeatureCollection",
-    "features": [
-      {
-        "type": "Feature",
-        "geometry": {
-          "type": "Point",
-          "coordinates": data['coords'],  # list of coordinates
-        },
-        "properties": {
-          "parameter": data['parameter'],
-          "values": data['values']
+  e.g.
+  'geometry':
+      { 'coordinates': [[4.0, 4.0, 4.0],
+                        [5.0, 5.0, 5.0],
+                        [6.0, 6.0, 6.0],
+                        [7.0, 7.0, 7.0],
+                        [8.0, 8.0, 8.0]],
+        'type': 'Point'
+      },
+  'properties':
+      { 'parameter': 'hs',
+        'times': ['2000-01-01T05:00:00',
+                  '2000-01-01T06:00:00',
+                  '2000-01-01T07:00:00'],
+        'values':[[54.0, 55.0, 56.0, 57.0, 58.0],
+                  [64.0, 65.0, 66.0, 67.0, 68.0],
+                  [74.0, 75.0, 76.0, 77.0, 78.0]]
         }
+
+
+  If data[var] is one-dimensional:
+  'geometry':
+      { 'coordinates': [],
+        'type': 'Point'
+      },
+  'properties':
+      { 'parameter': 'lon',
+        'values': [0.0,
+                   1.0,
+                   2.0,
+                   3.0,
+                   ...
+                  ]
       }
+
+  """
+
+  var = data['parameter']
+  t_indices = data['t_indices']
+  n_indices = data['n_indices']
+  values = data[var].tolist()
+
+  # TODO
+  if var == "spectra":
+    #print("spectra data")
+    pass
+
+
+  # other data
+  if t_indices is None and n_indices is None:
+    geojson = {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [],
+          },
+          "properties": {
+            "parameter": var,
+            "values": values,
+          }
+        }
+      ]
+    }
+
+  else:
+    # get index lists
+    nlist = get_index_list(n_indices, len(data['lons']))
+    tlist = get_index_list(t_indices, len(data['times']))
+
+    coordinates = [
+      [ data['lons'][n],
+        data['lats'][n],
+        data['bath'][n],
+      ] for n in nlist
     ]
-  }
+    times = [
+      str(data['times'][t])
+      for t in tlist
+    ]
+
+    geojson = {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": coordinates, # [ [x0, y0, z0], [x1, y1, z1], [x2, y2, z2], ...]
+          },
+          "properties": {
+            "parameter": var,
+            "values": values,
+            "times": times,
+          }
+        }
+      ]
+    }
+
   return json.dumps(geojson)
 
 
 def saveCSV(data):
   """
-  NEEDS FIXING
-  basic structure:
 
-  probably not multi dimensional?
+  parameter, timestep, lon, lat, value
 
-  "s"
-        n2   n3   n4   n5   n6
-    [ [ 3.,  4.,  5.,  6.,  7.],  t2
-      [13., 14., 15., 16., 17.],  t3
-      [23., 24., 25., 26., 27.]   t4
-    ]
+  hs,2000-01-01T01:00:00,7.0,7.0,71.0
+  hs,2000-01-01T02:00:00,7.0,7.0,72.0
+  hs,2000-01-01T03:00:00,7.0,7.0,73.0
 
-  "t"
-        t2   t3   t4
-    [ [ 3., 13., 23.],  n2
-      [ 4., 14., 24.],  n3
-      [ 5., 15., 25.],  n4
-      [ 6., 16., 26.],  n5
-      [ 7., 17., 27.]   n6
-    ]
+  parameter,value
+
+  lon,2.0
+  lon,2.1
+  lon,2.2
 
   """
 
-  # assumes lists already
   csv_string = ""
-  i = 0
-  for k, var in data.items():  # only one element in the dictionary?
-    csv_string += k+"\n"
-    if isinstance(var[0], list) or isinstance(var[0], np.ndarray):
-      for v in var:
-        for vv in v:
-          csv_string += str(i)+","+str(vv)+"\n"
-        i += 1
+  var = data['parameter']
+  t_indices = data['t_indices']
+  n_indices = data['n_indices']
+  values = data[var]
+
+  # TODO
+  if var == "spectra":
+    #print("spectra data")
+    #values = values.tolist()
+    #print(type(values), values)
+    pass
+
+
+  # other data
+  if t_indices is None and n_indices is None:
+    for v in data[var]:
+      csv_string += var + "," + str(v) + "\n"
+
+  else:
+    # get index lists
+    nlist = get_index_list(n_indices, len(data['lons']))
+    tlist = get_index_list(t_indices, len(data['times']))
+
+    # ensure values is always a 2d list --> [[]]
+    if len(values.shape) == 0: values = [[values.tolist()]]
     else:
-      for v in var:
-        csv_string += str(i)+","+str(v)+"\n"
+      if len(tlist) == 1: values = [list(values)]
+      if len(nlist) == 1: values = [[v] for v in values]
+
+    # concatenate csv rows
+    for i, t in enumerate(tlist):
+      for j, n in enumerate(nlist):
+        csv_string += var+","+str(data['times'][t])+","+str(data['lons'][n])+","+str(data['lats'][n])+","+str(values[i][j])+"\n"
 
   return csv_string
 
@@ -104,6 +249,13 @@ def saveBinary(data):
   # return binarypy.write(data)
 
 def saveNetCDF(data):
+
+  # TODO
+  var = data['parameter']
+  if var == "spectra":
+    #print("spectra data")
+    pass
+
   # create temporary file
   with Dataset('_.nc', 'w', format='NETCDF4') as nc:
     for var in data:
