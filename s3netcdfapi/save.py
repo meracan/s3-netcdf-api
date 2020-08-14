@@ -102,6 +102,31 @@ def saveGeoJSON(data):
                   [74.0, 75.0, 76.0, 77.0, 78.0]]
         }
 
+  For var == "spectra":
+  'geometry':
+      { 'coordinates': [[8.0, 8.0],
+                        [16.0, 16.0],
+        'type': 'Point'
+      },
+  'properties':
+      { 'parameter': 'spectra',
+
+        'times': ['2000-01-01T05:00:00'],
+
+        'freq': [0.0, 1.0, 2.0],
+        'dir':  [0.0, 1.0, 2.0, 3.0, 4.0],
+
+        'values':[
+                  [[90.0, 91.0, 92.0, 93.0, 94.0],
+                  [95.0, 96.0, 97.0, 98.0, 99.0],
+                  [100.0, 101.0, 102.0, 103.0, 104.0]],
+
+                  [[240.0, 241.0, 242.0, 243.0, 244.0],
+                  [245.0, 246.0, 247.0, 248.0, 249.0],
+                  [250.0, 251.0, 252.0, 253.0, 254.0]
+                ]
+        }
+
 
   If data[var] is one-dimensional:
   'geometry':
@@ -124,30 +149,13 @@ def saveGeoJSON(data):
   t_indices = data['t_indices']
   n_indices = data['n_indices']
   values = data[var].tolist()
-
-  # TODO
-  if var == "spectra":
-    #print("spectra data")
-    pass
-
+  coordinates, properties = [], {}
 
   # other data
   if t_indices is None and n_indices is None:
-    geojson = {
-      "type": "FeatureCollection",
-      "features": [
-        {
-          "type": "Feature",
-          "geometry": {
-            "type": "Point",
-            "coordinates": [],
-          },
-          "properties": {
-            "parameter": var,
-            "values": values,
-          }
-        }
-      ]
+    properties = {
+      "parameter": var,
+      "values": values,
     }
 
   else:
@@ -155,34 +163,61 @@ def saveGeoJSON(data):
     nlist = get_index_list(n_indices, len(data['lons']))
     tlist = get_index_list(t_indices, len(data['times']))
 
-    coordinates = [
-      [ data['lons'][n],
-        data['lats'][n],
-        data['bath'][n],
-      ] for n in nlist
-    ]
     times = [
       str(data['times'][t])
       for t in tlist
     ]
 
-    geojson = {
-      "type": "FeatureCollection",
-      "features": [
-        {
-          "type": "Feature",
-          "geometry": {
-            "type": "Point",
-            "coordinates": coordinates, # [ [x0, y0, z0], [x1, y1, z1], [x2, y2, z2], ...]
-          },
-          "properties": {
-            "parameter": var,
-            "values": values,
-            "times": times,
-          }
-        }
+    if var == "spectra":
+      station = int(data['station'])
+      freq = list(data['freq'])
+      dir_ = list(data['dir'])
+
+      coordinates = [
+        [data['lons'][station][n],
+         data['lats'][station][n]
+         ] for n in nlist
       ]
-    }
+
+      properties = {
+        "parameter": var,
+        "values": values,
+        "times": times,
+        "frequencies": freq,
+        "directions": dir_
+      }
+
+    else:
+
+      coordinates = [
+        [data['lons'][n],
+         data['lats'][n],
+         data['bath'][n],
+         ] for n in nlist
+      ]
+
+      properties = {
+        "parameter": var,
+        "values": values,
+        "times": times,
+      }
+
+  # [ [x0, y0, z0], [x1, y1, z1], [x2, y2, z2], ...]
+  geojson = {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": coordinates,
+        },
+        "properties": properties
+      }
+    ]
+  }
+
+  #pp.pprint(values)
 
   return json.dumps(geojson)
 
@@ -192,9 +227,9 @@ def saveCSV(data):
 
   parameter, timestep, lon, lat, value
 
-  hs,2000-01-01T01:00:00,7.0,7.0,71.0
-  hs,2000-01-01T02:00:00,7.0,7.0,72.0
-  hs,2000-01-01T03:00:00,7.0,7.0,73.0
+  hs,2000-01-01T01:00:00,7.0,7.0, 71.0
+  hs,2000-01-01T02:00:00,7.0,7.0, 72.0
+  hs,2000-01-01T03:00:00,7.0,7.0, 73.0
 
   parameter,value
 
@@ -202,24 +237,25 @@ def saveCSV(data):
   lon,2.1
   lon,2.2
 
+  parameter, timestep, lon, lat, freq, dir, value
+
+  spectra,2000-01-01T00:00:00,16.0,16.0,0.0,0.0, 3285000.0
+  spectra,2000-01-01T00:00:00,16.0,16.0,0.0,1.0, 3285001.0
+  spectra,2000-01-01T00:00:00,16.0,16.0,0.0,2.0, 3285002.0
+
   """
 
   csv_string = ""
   var = data['parameter']
   t_indices = data['t_indices']
   n_indices = data['n_indices']
+  #f_indices = data['f_indices'] # not used yet for now
   values = data[var]
-
-  # TODO
-  if var == "spectra":
-    #print("spectra data")
-    #values = values.tolist()
-    #print(type(values), values)
-    pass
 
 
   # other data
   if t_indices is None and n_indices is None:
+    csv_string += "parameter,value\n"  # header
     for v in data[var]:
       csv_string += var + "," + str(v) + "\n"
 
@@ -227,19 +263,49 @@ def saveCSV(data):
     # get index lists
     nlist = get_index_list(n_indices, len(data['lons']))
     tlist = get_index_list(t_indices, len(data['times']))
+    # flist = get_index_list(f_indices, len(data['freq'])) # not used yet for now
 
-    # ensure values is always a 2d list --> [[]]
-    if len(values.shape) == 0: values = [[values.tolist()]]
+    if var == "spectra":
+      csv_string += "parameter,timestep,lon,lat,freq,dir,value\n"  # header
+      station = int(data['station'])
+      f_index = data['freq']
+      d_index = data['dir']
+      if len(values.shape) == 2:
+        values = [values.tolist()]
     else:
-      if len(tlist) == 1: values = [list(values)]
-      if len(nlist) == 1: values = [[v] for v in values]
+      csv_string += "parameter,timestep,lon,lat,value\n"  # header
+      # ensure values is always a 2d list --> [[]]
+      if len(values.shape) == 0:
+        values = [[values.tolist()]]
+      else:
+        if len(tlist) == 1: values = [list(values)]
+        if len(nlist) == 1: values = [[v] for v in values]
 
     # concatenate csv rows
     for i, t in enumerate(tlist):
       for j, n in enumerate(nlist):
-        csv_string += var+","+str(data['times'][t])+","+str(data['lons'][n])+","+str(data['lats'][n])+","+str(values[i][j])+"\n"
+        if var == "spectra":
+          time = data['times'][t]
+          lon = data['lats'][station][n]
+          lat = data['lons'][station][n]
+          for f, freq in enumerate(data['freq']):
+            for d, dr in enumerate(data['dir']):
+              value = values[j][f][d]
+              csv_string += var + "," +\
+                            str(time) + "," +\
+                            str(lon) + "," +\
+                            str(lat) + "," +\
+                            str(freq) + "," +\
+                            str(dr) + "," +\
+                            str(value) +"\n"
+        else:
+          csv_string += var + "," +\
+                        str(data['times'][t]) + "," +\
+                        str(data['lons'][n]) + "," +\
+                        str(data['lats'][n]) + "," +\
+                        str(values[i][j]) +"\n"
 
-  return csv_string
+  return csv_string.rstrip()
 
 
 def saveBinary(data):

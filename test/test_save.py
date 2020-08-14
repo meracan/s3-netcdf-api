@@ -67,19 +67,27 @@ def test_csv():
   #data['t_indices'], data['n_indices'] = None, None
 
   var = "spectra"
-  data[var] = swan["spc", "spectra", 3, 1, 6] # station 3, node 1, time 6
-  data['t_indices'], data['n_indices'] = "6", "1"
+  data[var] = swan["spc", "spectra", 8, 0:3, 6]#, :, :] # station 8, nodes 0 to 3, time 6
+  data['station'],data['n_indices'],data['t_indices'],data['f_indices'],data['d_indices'] = "8","0:3","6",":",":"
+
   # ----------------------------
 
   data['parameter'] = var
-  data['lons'] = swan["nodes", "lon", :]
-  data['lats'] = swan["nodes", "lat", :]
+  if var == "spectra":
+    data['lons'] = swan["stations", "slon", :]
+    data['lats'] = swan["stations", "slat", :]
+    data['freq'] = swan["freq", "freq", :]
+    data['dir'] = swan["dir", "dir", :]
+
+
+  else:
+    data['lons'] = swan["nodes", "lon", :]
+    data['lats'] = swan["nodes", "lat", :]
   data['times'] = swan["time", "time", :]
 
   csv_body = saveCSV(data)
 
   print(csv_body)
-
 
   print("(test_csv passed)")
 
@@ -133,24 +141,36 @@ def test_geoJSON():
   #data[var] = swan["s", "hs", 5, 4]
   #data['t_indices'], data['n_indices'] = "5", "4"
 
-  var = "lon"
-  data[var] = swan["nodes", "lon", :]
-  data['t_indices'], data['n_indices'] = None, None
+  #var = "lon"
+  #data[var] = swan["nodes", "lon", :]
+  #data['t_indices'], data['n_indices'] = None, None
 
   # var = "hs"
   # data[var] = swan["s", "hs", 5:7, 4:8]
   # data['t_indices'], data['n_indices'] = "5:7", "4:8"
 
-  # var = "hs"
-  # data[var] = swan["s", "hs", 1, 4:8]
-  # data['t_indices'], data['n_indices'] = "[1]", "4:8"
+  #var = "hs"
+  #data[var] = swan["s", "hs", 1, 4:8]
+  #data['t_indices'], data['n_indices'] = "[1]", "4:8"
 
+  var = "spectra"
+  data[var] = swan["spc", "spectra", 8, 0:2, 6]  # , :, :] # station 8, nodes 0 to 3, time 6
+  data['station'], data['n_indices'], data['t_indices'], data['f_indices'], data['d_indices'] = "8","0:2","6",":",":"
   # ----------------------------
 
   data['parameter'] = var
-  data['lons'] = swan["nodes", "lon", :]
-  data['lats'] = swan["nodes", "lat", :]
-  data['bath'] = swan["nodes", "bed", :]
+
+  if var == "spectra":
+    data['lons'] = swan["stations", "slon", :]
+    data['lats'] = swan["stations", "slat", :]
+    data['freq'] = swan["freq", "freq", :]
+    data['dir'] = swan["dir", "dir", :]
+
+  else:
+    data['lons'] = swan["nodes", "lon", :]
+    data['lats'] = swan["nodes", "lat", :]
+    data['bath'] = swan["nodes", "bed", :]
+
   data['times'] = swan["time", "time", :]
 
   body = saveGeoJSON(data)

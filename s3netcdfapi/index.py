@@ -63,16 +63,26 @@ def query(parameters,credentials):
     data['x']=netcdf2d.query({"group":"nodes","variable":"lon"})
     data['y']=netcdf2d.query({"group":"nodes","variable":"lat"})
 
+
   if var!="mesh":
     # Get data using name of variable
     if format in ["geojson", "csv"]:
       data['parameter'] = var
 
-      data['n_indices'] = parameters.get('node', None)
-      data['lons'] = netcdf2d.query({"group": "nodes", "variable": "lon"})
-      data['lats'] = netcdf2d.query({"group": "nodes", "variable": "lat"})
-      data['bath'] = netcdf2d.query({"group": "nodes", "variable": "bed"})
+      if var == "spectra":
+        data['lons'] = netcdf2d.query({"group": "stations", "variable": "slon"})
+        data['lats'] = netcdf2d.query({"group": "stations", "variable": "slat"})
+        data['freq'] = netcdf2d.query({"group": "freq", "variable": "freq"})
+        data['dir'] = netcdf2d.query({"group": "dir", "variable": "dir"})
+        data['station'] = parameters.get('station', None)
+        data['freq_indices'] = parameters.get('freq', None)
+        data['dir_indices'] = parameters.get('dir', None)
+      else:
+        data['lons'] = netcdf2d.query({"group": "nodes", "variable": "lon"})
+        data['lats'] = netcdf2d.query({"group": "nodes", "variable": "lat"})
+        data['bath'] = netcdf2d.query({"group": "nodes", "variable": "bed"})
 
+      data['n_indices'] = parameters.get('node', None)
       data['t_indices'] = parameters.get('time', None)
       data['times'] = netcdf2d.query({"group": "time", "variable": "time"})
 
