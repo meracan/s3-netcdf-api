@@ -3,16 +3,16 @@ import json
 import boto3
 
 from s3netcdf import NetCDF2D
-from save import save,response
+from export import export
+from response import response
+from credentials import getCredentials
+
 
 def handler(event, context):
   try:
-    parameters = event['queryStringParameters']
-    if parameters is None:parameters={}
-    
-    credentials = checkCredentials(event)
+    parameters =  event.get("queryStringParameters",{})
+    credentials = getCredentials(event)
     return query(parameters,credentials)
-    
   except Exception as err:
     print(err)
     return {
@@ -21,39 +21,21 @@ def handler(event, context):
      "headers": {"Access-Control-Allow-Origin": "*"},
      }
 
-def checkCredentials(event):
-  try:
-    role=event['requestContext']['authorizer']['claims']['cognito:roles']
-    
-    sts = boto3.client('sts')
-    obj = sts.assume_role(RoleArn=role,RoleSessionName="APIrole")
-    
-    credentials={
-      "aws_access_key_id":obj['Credentials']['AccessKeyId'],
-      "aws_secret_access_key":obj['Credentials']['SecretAccessKey'],
-      "aws_session_token":obj['Credentials']['SessionToken']
-    }
-    return credentials
-  except Exception as err:
-    return {}
-  
 def query(parameters,credentials):
-  
   id = parameters.pop("id",os.environ["AWS_DEFAULTMODEL"])
-  Bucket=parameters.pop("bucket",os.environ['AWS_BUCKETNAME'])
+  prefix = parameters.pop("prefix",os.environ.get("AWS_PREFIX",None))
+  bucket=parameters.pop("bucket",os.environ['AWS_BUCKETNAME'])
+  checkNetCDFExist(credentials,id,prefix,bucket)
   
-  s3 = boto3.client('s3',**credentials)
-  key="{0}/{0}.nca".format(id)
+  netcdf2d=NetCDF2D({"name":id,"prefix":prefix,"bucket":bucket,"localOnly":False,"cacheLocation":"/tmp"})
   
-  s3.head_object(Bucket=Bucket, Key=key)
-  
-  netcdf2d=NetCDF2D({"name":id,"bucket":Bucket,"localOnly":False,"cacheLocation":"/tmp"})
-  
-  meta=netcdf2d.meta()
-  
+  # Export Metadata Only
   var=parameters.get('variable',None)
-  if var is None:return response("application/json",json.dumps(meta)) 
+  if var is None:
+    meta=netcdf2d.meta()
+    return response("application/json",False,json.dumps(meta)) 
   
+  # Export Data
   format= parameters.pop('format',"json")
   data={}
   if var=="mesh" or format=='slf':
@@ -96,5 +78,9 @@ def query(parameters,credentials):
     
   return save(format,data)
 
-
+def checkNetCDFExist(credentials,id,prefix,bucket):
+  s3 = boto3.client('s3',**credentials)
+  _prefix= "" if prefix is None else prefix+"/"
+  key="{0}{1}/{1}.nca".format(_prefix,id)
+  s3.head_object(Bucket=bucket, Key=key)# Check if object exist, if not returns Exception
 
