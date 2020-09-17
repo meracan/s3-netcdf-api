@@ -1,12 +1,26 @@
 import export
 
-def _export(format,data):
+def _export(parameters,netcdf2d):
   """
   Parameters
   ----------
-  format:str,choice(json,geojson,...)
-  data:ndarray
-  
+  parameters:
+  netcdf2d:ndarray
+
+  """
+  format = parameters.pop('format',"json")
+  if format=="jsontest": return ("application/json",False,export.jsontest(parameters,netcdf2d))
+  if format=="json":return ("application/json",False,export.json(parameters,netcdf2d))
+  if format=="geojson":return ("application/json",False,export.geojson(parameters,netcdf2d))
+  if format=="csv":return ("text/csv",False,export.csv(parameters,netcdf2d))
+  if format=="bin":return ("application/octet-stream",True,export.binary(parameters,netcdf2d))
+  if format=="nc":return ("application/octet-stream",True,export.netcdf(parameters,netcdf2d))
+  if format=="mat":return ("application/octet-stream",True,export.mat(parameters,netcdf2d))
+  if format=="tri":return ("application/octet-stream",True,export.tri(parameters,netcdf2d))
+  if format=="slf":return ("application/octet-stream",True,export.slf(parameters,netcdf2d))
+  if format=="shp":return ("application/octet-stream",True,export.shapefile(parameters,netcdf2d))
+
+  """
   data[var] structure:
 
   one node
@@ -31,16 +45,4 @@ def _export(format,data):
       [ 6., 16., 26.],  t5
       [ 7., 17., 27.]   t6
     ]
-  """
-  
-  if format=="jsontest": return export.jsontest(data)
-  if format=="json":return export.json(data)
-  if format=="geojson":return export.geojson(data)
-  if format=="csv":return export.csv(data)
-  if format=="bin":return export.binary(data)
-  if format=="nc":return export.netcdf(data)
-  if format=="mat":return export.mat(data)
-  if format=="tri":return export.tri(data)
-  if format=="slf":return export.slf(data)
-  if format=="shp":return export.shapefile(data)
-
+    """
