@@ -1,6 +1,9 @@
 import numpy as np
 from s3netcdf import NetCDF2D
 from datetime import datetime
+import sys
+from matplotlib.tri import Triangulation
+import matplotlib.pyplot as plt
 
 def createGrid(xstart=-1,xend=1,xstep=0.1,ystart=-1,yend=1,ystep=0.1):
   xPoints = np.arange(xstart,xend+xstep,xstep)
@@ -8,23 +11,30 @@ def createGrid(xstart=-1,xend=1,xstep=0.1,ystart=-1,yend=1,ystep=0.1):
   
   xlen = len(xPoints)
   ylen = len(yPoints)
-  
-  xy = np.array([[x,y] for y in yPoints for x in xPoints],np.float32)
-  
+
+  x, y = np.meshgrid(xPoints, yPoints)
+  x=x.ravel()
+  y=y.ravel()
+  xy=np.column_stack((x,y))
   elem = []
   for row in range(ylen-1):
     for col in range(xlen-1):
-      n1 = col+row*(ylen)
-      n2 = (col+1)+row*(ylen)
-      n3 = col+(row+1)*(ylen)
-      n4 = (col+1)+(row+1)*(ylen)
+      n1 = col+row*(xlen)
+      n2 = (col+1)+row*(xlen)
+      n3 = col+(row+1)*(xlen)
+      n4 = (col+1)+(row+1)*(xlen)
       elem.append([n1,n3,n2])
       elem.append([n2,n3,n4])
   elem =  np.array(elem)  
+  
+  # tri = Triangulation(x, y, elem.astype("int32"))
+  # plt.triplot(tri)
+  # trifinder = tri.get_trifinder()
+  # plt.savefig('{}.png'.format("xxx"))
   return {"xy":xy,"elem":elem}
 
 def main():
-  grid=createGrid(-160,-120,0.1,40,60,0.1)
+  grid=createGrid(-160.0,-150.0,0.1,40.0,50.0,0.1)
   x=grid['xy'][:,0]
   y=grid['xy'][:,1]
   elem=grid['elem']

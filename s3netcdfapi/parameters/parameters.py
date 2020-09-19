@@ -8,17 +8,42 @@ def getParameters(netcdf2d,_parameters):
     'mesh':{"default":False,"type":bool},
     'variable':{"default":None,"type":(str,list)},
     'inode':{"default":None,"type":(int,list)},
+    'isnode':{"default":None,"type":(int,list)},
     'longitude':{"default":None,"type":(float,list)},
     'latitude':{"default":None,"type":(float,list)},
+    'slongitude':{"default":None,"type":(float,list)},
+    'slatitude':{"default":None,"type":(float,list)},    
+    'meshx':{"default":None,"type":(float,list)},
+    'meshy':{"default":None,"type":(float,list)},
+    'elem':{"default":None,"type":(float,list)},
     'x':{"default":None,"type":(float,list)},
     'y':{"default":None,"type":(float,list)},
+    'sx':{"default":None,"type":(float,list)},
+    'sy':{"default":None,"type":(float,list)},    
     'itime':{"default":None,"type":(int,list)},
     'start':{"default":None,"type":str},
     'end':{"default":None,"type":str},
     'step':{"default":1,"type":int},
     'stepUnit':{"default":'h',"type":str},
-    'smethod':{"default":'closest',"type":str},
-    'tmethod':{"default":'closest',"type":str},
+    'methods':{"default":{
+      "nnode":"spatial",
+      "ntime":"temporal",
+      "nsnode":"spectral",
+      },"type":object},    
+    'interpolation':{"default":{
+      "spatial":"closest",
+      "temporal":"closest",
+      "spectral":"closest",
+      },"type":object},
+    'pointer':{"default":{
+      "meshx":{'variable':'x'},
+      "meshy":{'variable':'y'},
+      "elem":{'variable':'elem'},
+      "time":{'variable':'time'},
+      "sx":{'variable':'sx'},
+      "sy":{'variable':'sy'},
+      "dimensions":{"itime":'itime',"inode":'inode',"isnode":'isnode'},
+      },"type":(object)},
   }
 
   obj=parseParameters(default,_parameters)
@@ -42,15 +67,15 @@ def getGroups(netcdf2d,obj):
   """ Get unique groups based on the variables
   """
   if len(obj['variable'])==0:return []
-  vars=netcdf2d.getVariables()
-  l=[]
-  for var in vars:
-    if var in obj['variable']:
-      if isinstance(vars[var],list):l.extend(vars[var])
-      else:l.append(vars[var])
-  groups=list(set(l))
-  groups.sort()
-  return groups
+  _tmp=[netcdf2d.getGroupsByVariable(vname) for vname in obj['variable']]
+  # print(_tmp)
+  ugroups=[]
+  for a in _tmp:
+    con=True
+    for b in ugroups:
+      if con and a==b:con=False
+    if con:ugroups.append(a)
+  return ugroups
 
 def formatTuple(t):
   l=list(t)
@@ -60,6 +85,8 @@ def formatTuple(t):
   if slice in l and int in l:return int
   raise Exception("Please review formatTuple {}".format(l))
 
+
+
 def parseParameters(obj,parameters):
   newobject={}
   for o in obj:
@@ -67,6 +94,8 @@ def parseParameters(obj,parameters):
     type=obj[o]['type']
     newobject[o]=parseParameter(parameters.get(o,default),type)
   return newobject  
+
+
 
 def parseString(parameter,t):
   try:

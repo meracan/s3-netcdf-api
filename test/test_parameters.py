@@ -34,10 +34,12 @@ netcdf2d=NetCDF2D(input)
 
 def test_getGroups():
   assert getGroups(netcdf2d,{'variable':[]})==[]
-  assert getGroups(netcdf2d,{'variable':['u']})==['s','t']
-  assert getGroups(netcdf2d,{'variable':['u','v']})==['s','t']
-  assert getGroups(netcdf2d,{'variable':['x','y']})==['node']
-  assert getGroups(netcdf2d,{'variable':['sx','sy']})==['snode']
+  assert getGroups(netcdf2d,{'variable':['u']})==[['s','t']]
+  assert getGroups(netcdf2d,{'variable':['u','v']})==[['s','t']]
+  assert getGroups(netcdf2d,{'variable':['x','y']})==[['node']]
+  assert getGroups(netcdf2d,{'variable':['sx','sy']})==[['snode']]
+  assert getGroups(netcdf2d,{'variable':['u','x']})==[['s','t'],['node']]
+  assert getGroups(netcdf2d,{'variable':['u','v','x']})==[['s','t'],['node']]
 
 
 def test_parseParameters():
@@ -136,18 +138,49 @@ def test_checkExport():
 def test_getParameters():
 
   # Test 1
-  parameters1={'longitude':[0.1,0.1],'latitude':[0.2,0.2],'itime':0}
-  r1=getParameters(netcdf2d,parameters1)
-  del r1['xy']
-  assert r1=={'export': 'json', 'mesh': False, 'variable': [], 'inode': None, 'x': [0.1, 0.1], 'y': [0.2, 0.2], 'itime': [0], 'start': None, 'end': None, 'step': None, 'stepUnit': 'h', 'smethod': 'closest', 'tmethod': 'closest', 'groups': [], 'ngroups': 0, 'isTable': False, 'dt': None}
+  parameters1={'variable':'u','longitude':[0.1,0.1],'latitude':[0.2,0.2],'itime':0}
+  obj=getParameters(netcdf2d,parameters1)
+  # del r1['xy']
+  # del r1['pointer']
+  # assert r1=={'export': 'json', 'mesh': False, 'variable': [], 'inode': None, 'meshx': None, 'meshy': None, 'elem': None, 'x': [0.1, 0.1], 'y': [0.2, 0.2], 'itime': [0], 'start': None, 'end': None, 'step': None, 'stepUnit': 'h', 'smethod': 'closest', 'tmethod': 'closest', 'groups': [], 'ngroups': 0, 'isTable': False, 'dt': None}
+  # print(r1)
   
+  # Get data
+  data={}
+  for variable in obj['variable']:
+    dimensions=netcdf2d.getDimensionsByVariable(variable)
+    tmp=[]
+    for dimension in dimensions:
+      if not dimension in obj['methods']:raise Exception("No method was specified for {}".format(dimension))
+      # if obj['methods'][dimension]=='spatial': getSpatialIdx
+      # if obj['methods'][dimension]=='temporal': getTemporalIdx
+    # if len(tmp)>1 and spatial>temporal, change spatial to all
+    # elif len(tmp)>1 and temporal>spatial, 
+    # else if temoral> timesries, spatial>
+    # Get Data
+    
+        
+    # conditions=[obj['methods'][dimension] for dimension in dimensions]
+    # if 'spectral' in conditions:
+    #   None # get x,y
+    # elif 'spatial' in conditions and 'temporal'in conditions:
+    #   None
+    # elif 'spatial' in conditions:
+    #   None
+    # elif 'temporal' in conditions:
+    #   None  
+    # else:
+    #   None
+    #   # if obj['methods'][dimension]=='spatial': getSpatialIdx
+    #   # if obj['methods'][dimension]=='temporal': getSpatialIdx
+    #   print(obj['methods'][dimension])
 
 
 
 if __name__ == "__main__":
-  test_getGroups()
-  test_parseParameters()
-  test_checkSpatial()
-  test_checkTemporal()
-  test_checkExport()
+  # test_getGroups()
+  # test_parseParameters()
+  # test_checkSpatial()
+  # test_checkTemporal()
+  # test_checkExport()
   test_getParameters()
