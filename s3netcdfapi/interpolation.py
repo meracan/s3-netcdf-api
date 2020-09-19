@@ -132,7 +132,7 @@ def barycentric(elem,x,y,p,_data=None):
   return np.einsum('ij...,ij->i...',_data[elem[iElem]],weight)
 
 
-def process(netcdf2d,obj,variable):
+def getData(netcdf2d,obj,variable):
   data,dimensions=netcdf2d.query(cleanObject({**obj,'variable':variable}),True)
   shapeNames=np.array(dimensions.keys())
   for dim in dimensions.keys():
@@ -153,7 +153,8 @@ def process(netcdf2d,obj,variable):
     elif dim=="nsnode":
       if obj['interpolation']['spectral']=="closest":
         None      
-
+  return data
+  
 def checkOrientation(data,shapeNames,name):
   if shapeNames[0]!=name:
     data=data.T

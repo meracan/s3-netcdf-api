@@ -7,7 +7,7 @@ from export import export
 from parameters import getParameters
 from response import response
 from credentials import getCredentials
-from interpolation import sInterpolate,tInterpolate,cleanObject
+from interpolation import getData
 
 def handler(event, context):
   try:
@@ -49,26 +49,7 @@ def query(parameters,credentials):
   # Get data
   data={}
   for variable in obj['variable']:
-    data,dimensions=netcdf2d.query(cleanObject({**obj,'variable':variable}),True)
-    dimShape=np.array(dimensions.keys())
-    for dim in dimensions.keys():
-      if dim=="ntime":
-        data,dimShape=checkOrientation(data,dimShape,'ntime')
-        if obj['interpolation']['spatial']=="linear"
-        data=inter.timeSeries(obj["datetime"],obj["datetime"],data)
-      elif dim=="nnode":
-        data,dimShape=checkOrientation(data,dimShape,'nnode')
-        if obj['interpolation']['spatial']=="linear"
-          data=inter.barycentric(obj["_elem"],obj["_x"],obj["_y"],obj['xy'],data)
-        elif obj['interpolation']['spatial']=="closest":
-          None
-          
-    if dimensions==['ntime','nnode']:
-      None
-    if dimensions==['ntime','nnode']:
-      None      
-      if dim=="nnode":data=inter.barycentric(elem,x,y,points,u.T)
-  
+    data[variable]=getData(netcdf2d,obj,variable)
   
   # Export Data
   return response(**export(obj,data))
