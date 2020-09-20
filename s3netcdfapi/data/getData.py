@@ -105,7 +105,7 @@ def getData(netcdf2d,obj,variable):
   return {
     "data":data,
     "header":getHeader(obj,dimensions),
-    "dimValues":getDimensionValues(data,obj,dimensions),
+    "dimValues":getDimensionValues(data.shape,obj,dimensions),
     "dimHeaders":getDimensionHeaders(obj,dimensions)}
 
 def getHeader(obj,variable):
@@ -124,7 +124,7 @@ def getDimensionHeaders(obj,dimensions):
   """
   return [getHeader(obj,dim) for dim in dimensions]
 
-def getDimensionValues(data,obj,dimensions):
+def getDimensionValues(shape,obj,dimensions):
   """
   """
   dimensions = ["{}".format(dimension[1:]) for dimension in dimensions]
@@ -134,10 +134,10 @@ def getDimensionValues(data,obj,dimensions):
   # TODO: Compute itemSize
   # TODO: Compute values to string
   
-  a=np.chararray((np.prod(data.shape)), itemsize=32).reshape(data.shape)
+  a=np.chararray((np.prod(shape)), itemsize=32).reshape(shape)
   a[:]=""
-  if len(a.shape)!=len(dimIndexValue):raise Exception("Shape of dimension index values does not match the data")
-  for i,(ishape,indexValue) in enumerate(zip(a.shape,dimIndexValue)):
+  if len(shape)!=len(dimIndexValue):raise Exception("Shape of dimension index values does not match the data")
+  for i,(ishape,indexValue) in enumerate(zip(shape,dimIndexValue)):
     if ishape!=len(indexValue):raise Exception("Error here")    
     t=[slice(None)for j in range(i)]
     for k in range(ishape):

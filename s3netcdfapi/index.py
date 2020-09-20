@@ -7,7 +7,7 @@ from export import export
 from parameters import getParameters
 from response import response
 from credentials import getCredentials
-from getData import getData
+from data.getData import getData
 
 def handler(event, context):
   try:
