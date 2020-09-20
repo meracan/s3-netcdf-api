@@ -102,12 +102,16 @@ def getData(netcdf2d,obj,variable):
   # Swap to original axes
   data,dimensions=swapAxes(data,dimensions,_dimensions)
   
-  return {"data":data,"header":getHeader(netcdf2d,obj,dimensions),"dimValues":getDimensionValues}
+  return {
+    "data":data,
+    "header":getHeader(obj,dimensions),
+    "dimValues":getDimensionValues(data,obj,dimensions),
+    "dimHeaders":getDimensionHeaders(obj,dimensions)}
 
-def getHeader(netcdf2d,obj,variable):
+def getHeader(obj,variable):
   """
   """
-  meta=netcdf2d.meta()['variable']
+  meta=obj['meta']['variable']
   
   header=""
   if obj['standard_name']:header="{}, {}".format(header,meta[variable]['standard_name'])
@@ -115,13 +119,20 @@ def getHeader(netcdf2d,obj,variable):
   
   return header
 
+def getDimensionHeaders(obj,dimensions):
+  """
+  """
+  return [getHeader(obj,dim) for dim in dimensions]
+
 def getDimensionValues(data,obj,dimensions):
   """
   """
   dimensions = ["{}".format(dimension[1:]) for dimension in dimensions]
   dimIndexValue=[obj[dim] for dim in dimensions]
   
+  # TODO: for node and snode, combine x,y or sx,sy
   # TODO: Compute itemSize
+  # TODO: Compute values to string
   
   a=np.chararray((np.prod(data.shape)), itemsize=32).reshape(data.shape)
   a[:]=""
