@@ -4,8 +4,29 @@ from matplotlib.tri import Triangulation,LinearTriInterpolator
 
 import sys
 
+def _checkBounds(datetimes,_datetimes):
+  """
+  """
+  dt_min=np.min(_datetimes)
+  dt__min=np.min(datetimes)
+  dt_max=np.max(_datetimes)
+  dt__max=np.max(datetimes)  
+  if dt_min <dt__min:raise Exception("{} is below reference datetimes {}".format(dt_min,dt__min))
+  if dt_max >dt__max:raise Exception("{} is above reference datetimes {}".format(dt_max,dt__max))
 
-def timeSeries(datetimes,_datetimes,_data=None,bounds_error=True):
+def timeSeriesClosest(datetimes,_datetimes,_data=None,bounds_error=True):
+  """
+  """
+  if bounds_error:
+    _checkBounds(datetimes,_datetimes)
+  
+  i0=np.argsort(np.abs(datetimes - _datetimes[:, np.newaxis]))[:,0] # Closest index
+  data = _data[i0]
+  return data
+  
+  
+
+def timeSeriesLinear(datetimes,_datetimes,_data=None,bounds_error=True):
   """
   Interpolate time-series
   
@@ -38,14 +59,8 @@ def timeSeries(datetimes,_datetimes,_data=None,bounds_error=True):
   
   """
   if bounds_error:
-    dt_min=np.min(_datetimes)
-    dt__min=np.min(datetimes)
-    dt_max=np.max(_datetimes)
-    dt__max=np.max(datetimes)  
-    if dt_min <dt__min:raise Exception("{} is below reference datetimes {}".format(dt_min,dt__min))
-    if dt_max >dt__max:raise Exception("{} is above reference datetimes {}".format(dt_max,dt__max))
+    _checkBounds(datetimes,_datetimes)
   
-
   _i0=np.argsort(np.abs(datetimes - _datetimes[:, np.newaxis]))[:,0] # Closest index
   _i1=np.argsort(np.abs(datetimes - _datetimes[:, np.newaxis]))[:,1] # Second closest
   
@@ -130,47 +145,3 @@ def barycentric(elem,x,y,p,_data=None):
     weight[idx]=_weight.T
   if _data is None:return isInside,iElem,weight
   return np.einsum('ij...,ij->i...',_data[elem[iElem]],weight)
-
-
-def getData(netcdf2d,obj,variable):
-  data,dimensions=netcdf2d.query(cleanObject({**obj,'variable':variable}),True)
-  shapeNames=np.array(dimensions.keys())
-  for dim in dimensions.keys():
-    data,shapeNames=checkOrientation(data,shapeNames,dim)
-    if dim=="ntime":
-      if obj['interpolation']['spatial']=="closest":
-        None        
-      elif obj['interpolation']['spatial']=="linear":
-        data=timeSeries(obj["datetime"],obj["datetime"],data)
-    
-    elif dim=="nnode":
-      if obj['interpolation']['spatial']=="closest":
-        None
-      elif obj['interpolation']['spatial']=="linear":
-        data=barycentric(obj["_elem"],obj["_x"],obj["_y"],obj['xy'],data)
-      
-    
-    elif dim=="nsnode":
-      if obj['interpolation']['spectral']=="closest":
-        None      
-  return data
-  
-def checkOrientation(data,shapeNames,name):
-  if shapeNames[0]!=name:
-    data=data.T
-    shapeNames=shapeNames.T
-  return data,shapeNames
-
-def cleanObject(obj):
-  newobject={}
-  
-  dimensions=obj['pointer']['dimensions']
-  for name in dimensions:
-    if name in obj:
-      dim=obj.get(name)
-      newobject[dimensions[name]]=dim
-  
-  if not 'variable' in obj:raise Exception("Add {} to the default parameter object".format('variable'))
-  newobject['variable']=obj['variable']
-  
-  return newobject  

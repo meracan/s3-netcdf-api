@@ -8,11 +8,12 @@ def checkTemporal(netcdf2d,obj):
   obj['dt']=None
   if obj['itime'] is not None:
     if not isinstance(obj['itime'],list):obj['itime']=[obj['itime']]
+    obj['datetime']=netcdf2d.query({"variable":"time","itime":obj.get('time')})
     obj['start']=None
     obj['end']=None
     obj['step']=None
   elif obj['start'] is not None or obj['end'] is not None:
-    obj['datetime']=dt=netcdf2d.query(getIdx(obj,'time'))
+    obj['datetime']=dt=netcdf2d.query({"variable":"time","itime":getIdx(obj,'time')})
     mindt=np.min(dt)
     maxdt=np.max(dt)
     
@@ -35,3 +36,4 @@ def checkTemporal(netcdf2d,obj):
     obj['itime']=np.arange(i0,i1,dtype="int")
   
   return obj
+  

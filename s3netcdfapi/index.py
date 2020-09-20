@@ -7,7 +7,7 @@ from export import export
 from parameters import getParameters
 from response import response
 from credentials import getCredentials
-from interpolation import getData
+from getData import getData
 
 def handler(event, context):
   try:
@@ -54,18 +54,6 @@ def query(parameters,credentials):
   # Export Data
   return response(**export(obj,data))
 
-
-# def getSpatial(netcdf2d,obj,variable):
-#   if obj['xy'] is None:
-#     return netcdf2d.query(cleanObject({**obj,'variable':variable}))
-#   else:
-#     return sInterpolate(netcdf2d,obj,variable)
-  
-# def getTemporal(netcdf2d,obj,variable):
-#   if obj['dt'] is None:
-#     return getSpatial(netcdf2d,obj,variable)
-#   else:
-#     return tInterpolate(netcdf2d,obj,variable)  
 
 
   
