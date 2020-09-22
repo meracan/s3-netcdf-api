@@ -1,40 +1,38 @@
-from . import checkExport,checkSpatial,checkTemporal
+from .checkExport import checkExport
+from .checkSpatial import checkSpatial
+from .checkTemporal import checkTemporal
 import numpy as np
 
 def getParameters(netcdf2d,_parameters):
     
   default={
     'export':{"default":"json","type":str},
-    'mesh':{"default":False,"type":bool},
+    "dataOnly":{"default":False,"type":bool},
+    # 'mesh':{"default":False,"type":bool},
     'variable':{"default":None,"type":(str,list)},
-    'inode':{"default":None,"type":(int,list)},
-    'isnode':{"default":None,"type":(int,list)},
+    
+    'inode':{"default":None,"type":(int,list,slice)},
     'longitude':{"default":None,"type":(float,list)},
     'latitude':{"default":None,"type":(float,list)},
-    'slongitude':{"default":None,"type":(float,list)},
-    'slatitude':{"default":None,"type":(float,list)},    
-    'meshx':{"default":None,"type":(float,list)},
-    'meshy':{"default":None,"type":(float,list)},
-    'elem':{"default":None,"type":(float,list)},
     'x':{"default":None,"type":(float,list)},
     'y':{"default":None,"type":(float,list)},
+    
+    'isnode':{"default":None,"type":(int,list,slice)},
+    'slongitude':{"default":None,"type":(float,list)},
+    'slatitude':{"default":None,"type":(float,list)},    
     'sx':{"default":None,"type":(float,list)},
     'sy':{"default":None,"type":(float,list)},    
-    'itime':{"default":None,"type":(int,list)},
+    
+    'itime':{"default":None,"type":(int,list,slice)},
     'start':{"default":None,"type":str},
     'end':{"default":None,"type":str},
     'step':{"default":1,"type":int},
     'stepUnit':{"default":'h',"type":str},
-    'methods':{"default":{
-      "nnode":"spatial",
-      "ntime":"temporal",
-      "nsnode":"spectral",
-      },"type":object},    
-    'interpolation':{"default":{
-      "spatial":"closest",
-      "temporal":"closest",
-      "spectral":"closest",
-      },"type":object},
+    
+    'inter.spatial':{"default":'closest',"type":str},
+    'inter.temporal':{"default":'closest',"type":str},
+    'inter.spectral':{"default":'closest',"type":str},
+      
     'pointer':{"default":{
       "meshx":{'variable':'x'},
       "meshy":{'variable':'y'},
@@ -44,8 +42,13 @@ def getParameters(netcdf2d,_parameters):
       "sy":{'variable':'sy'},
       "dimensions":{"itime":'itime',"inode":'inode',"isnode":'isnode'},
       },"type":(object)},
+          
+    
+    # 'meshx':{"default":None,"type":(float,list)},
+    # 'meshy':{"default":None,"type":(float,list)},
+    # 'elem':{"default":None,"type":(float,list)},
+    
   }
-
   obj=parseParameters(default,_parameters)
   obj=setGroups(netcdf2d,obj)
   obj=checkExport(netcdf2d,obj)
@@ -56,7 +59,14 @@ def getParameters(netcdf2d,_parameters):
 
 def setGroups(netcdf2d,obj):
   if obj['variable'] is None: obj['variable']=[]
+  
   if not isinstance(obj['variable'], list):obj['variable']=[obj['variable']]
+  if 'mesh' in obj['variable']:
+    if not 'x' in obj['variable']:obj['variable'].append('x')
+    if not 'y' in obj['variable']:obj['variable'].append('y')
+    if not 'elem' in obj['variable']:obj['variable'].append('elem')
+    obj['variable'].remove('mesh')
+  
   obj['groups']=groups=getGroups(netcdf2d,obj)
   obj['ngroups']=ngroups=len(groups)
   obj['isTable']= ngroups==1
@@ -68,7 +78,7 @@ def getGroups(netcdf2d,obj):
   """
   if len(obj['variable'])==0:return []
   _tmp=[netcdf2d.getGroupsByVariable(vname) for vname in obj['variable']]
-  # print(_tmp)
+  
   ugroups=[]
   for a in _tmp:
     con=True
@@ -155,4 +165,5 @@ def parseParameter(parameter,types=str):
       return value
   else:
     if isinstance(parameter,types):return parameter
-    else:return t(parameter)
+    else:
+      return t(parameter)

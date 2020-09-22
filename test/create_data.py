@@ -54,33 +54,39 @@ def main():
         nelem=len(elem),
         nnode=len(x),
         ntime=1000,
-        nsnode=300,
+        nsnode=10,
         nfreq=33,
         ndir=36,
       ),
       groups=dict(
         elem=dict(dimensions=["nelem","npe"],variables=dict(
-          elem=dict(type="i4", units="" ,standard_name="" ,long_name=""),
+          elem=dict(type="i4", units="" ,standard_name="Connectivity" ,long_name=""),
         )),
         time=dict(dimensions=["ntime"],variables=dict(
-          time=dict(type="f8",units="hours since 1970-01-01 00:00:00.0" ,calendar="gregorian" ,standard_name="" ,long_name=""),
+          time=dict(type="f8",units="hours since 1970-01-01 00:00:00.0" ,calendar="gregorian" ,standard_name="Datetime" ,long_name=""),
           )),
         node=dict(dimensions=["nnode"],variables=dict(
-          x=dict(type="f4",units="m" ,standard_name="" ,long_name=""),
-          y=dict(type="f4",units="m" ,standard_name="" ,long_name=""),
+          x=dict(type="f4",units="" ,standard_name="Longitude" ,long_name=""),
+          y=dict(type="f4",units="" ,standard_name="Latitude" ,long_name=""),
           )),
         snode=dict(dimensions=["nsnode"],variables=dict(
-          sx=dict(type="f4",units="m" ,standard_name="" ,long_name=""),
-          sy=dict(type="f4",units="m" ,standard_name="" ,long_name=""),
-          feature=dict(type="i4",units="" ,standard_name="" ,long_name=""),
+          sx=dict(type="f4",units="" ,standard_name="Longitude" ,long_name=""),
+          sy=dict(type="f4",units="" ,standard_name="Latitude" ,long_name=""),
+          feature=dict(type="i4",units="" ,standard_name="Feature" ,long_name=""),
           )),          
+        freq=dict(dimensions=["nfreq"],variables=dict(
+          freq=dict(type="f4",units="Hz" ,standard_name="Frequency" ,long_name=""),
+          )),
+        dir=dict(dimensions=["ndir"],variables=dict(
+          dir=dict(type="f4",units="radian" ,standard_name="Direction" ,long_name=""),
+          )),
         s=dict(dimensions=["ntime", "nnode"] ,variables=dict(
-          u=dict(type="f4",units="m" ,standard_name="" ,long_name=""),
-          v=dict(type="f4",units="m" ,standard_name="" ,long_name=""),
+          u=dict(type="f4",units="m/s" ,standard_name="U Velocity" ,long_name=""),
+          v=dict(type="f4",units="m/s" ,standard_name="V Velocity" ,long_name=""),
           )),
         t=dict(dimensions=["nnode" ,"ntime"] ,variables=dict(
-          u=dict(type="f4",units="m" ,standard_name="" ,long_name=""),
-          v=dict(type="f4",units="m" ,standard_name="" ,long_name=""),
+          u=dict(type="f4",units="m/s" ,standard_name="U Velocity" ,long_name=""),
+          v=dict(type="f4",units="m/s" ,standard_name="V Velocity" ,long_name=""),
           )),
           
         spc=dict(dimensions=["nsnode","ntime","nfreq", "ndir"] ,variables=dict(
@@ -112,11 +118,14 @@ def main():
   
   sshape = netcdf2d.groups["s"].shape
   svalue = np.arange(np.prod(sshape)).reshape(sshape)
-  print(svalue.shape)
+  
   netcdf2d["s","u"] = svalue
   netcdf2d["s","v"] = svalue
   netcdf2d["t","u"] = svalue.T
   netcdf2d["t","v"] = svalue.T
+  netcdf2d["freq","freq"] = np.arange(33)/33.0
+  netcdf2d["dir","dir"] = np.arange(36)/36.0
+  netcdf2d["spc","spectra"] = np.arange(10*1000*33*36)/1000000.0
   
 if __name__ == "__main__":
   main()

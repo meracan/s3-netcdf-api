@@ -4,36 +4,36 @@ from matplotlib.tri import Triangulation,LinearTriInterpolator
 
 import sys
 
-def _checkBounds(datetimes,_datetimes):
+def _checkBounds(_datetimes,datetimes):
   """
   """
-  dt_min=np.min(_datetimes)
-  dt__min=np.min(datetimes)
-  dt_max=np.max(_datetimes)
-  dt__max=np.max(datetimes)  
+  dt_min=np.min(datetimes)
+  dt__min=np.min(_datetimes)
+  dt_max=np.max(datetimes)
+  dt__max=np.max(_datetimes)  
   if dt_min <dt__min:raise Exception("{} is below reference datetimes {}".format(dt_min,dt__min))
   if dt_max >dt__max:raise Exception("{} is above reference datetimes {}".format(dt_max,dt__max))
 
-def timeSeriesClosest(datetimes,_datetimes,_data=None,bounds_error=True):
+def timeSeriesClosest(_datetimes,datetimes,_data=None,bounds_error=True):
   """
   """
   if bounds_error:
-    _checkBounds(datetimes,_datetimes)
+    _checkBounds(_datetimes,datetimes)
   
-  i0=np.argsort(np.abs(datetimes - _datetimes[:, np.newaxis]))[:,0] # Closest index
+  i0=np.argsort(np.abs(_datetimes - datetimes[:, np.newaxis]))[:,0] # Closest index
   data = _data[i0]
   return data
   
   
 
-def timeSeriesLinear(datetimes,_datetimes,_data=None,bounds_error=True):
+def timeSeriesLinear(_datetimes,datetimes,_data=None,bounds_error=True):
   """
   Interpolate time-series
   
   Parameters
   ----------
-  datetimes:reference datetimes, np.datetime64
-  _datetimes:datetimes to interpolate,np.datetime64
+  _datetimes:reference datetimes, np.datetime64
+  datetimes:datetimes to interpolate,np.datetime64
   _data:(optional)reference data, np.ndarray
   
   Assumptions
@@ -59,18 +59,18 @@ def timeSeriesLinear(datetimes,_datetimes,_data=None,bounds_error=True):
   
   """
   if bounds_error:
-    _checkBounds(datetimes,_datetimes)
+    _checkBounds(_datetimes,datetimes)
   
-  _i0=np.argsort(np.abs(datetimes - _datetimes[:, np.newaxis]))[:,0] # Closest index
-  _i1=np.argsort(np.abs(datetimes - _datetimes[:, np.newaxis]))[:,1] # Second closest
+  _i0=np.argsort(np.abs(_datetimes - datetimes[:, np.newaxis]))[:,0] # Closest index
+  _i1=np.argsort(np.abs(_datetimes - datetimes[:, np.newaxis]))[:,1] # Second closest
   
   i1=np.maximum(_i0,_i1) # id1 is the front index
   i0=np.minimum(_i0,_i1) # id0 is the back index
   
-  t1=datetimes[i1] # Front datetime
-  t0=datetimes[i0] # Back datetime
+  t1=_datetimes[i1] # Front datetime
+  t0=_datetimes[i0] # Back datetime
   
-  w1 = (_datetimes-t0) / (t1-t0) # Weight of front
+  w1 = (datetimes-t0) / (t1-t0) # Weight of front
   w0 = 1.0-w1  # Weight of back
   
   if _data is None:return {"i0":i0,"i1":i1,"w0":w0,"w1":w1}

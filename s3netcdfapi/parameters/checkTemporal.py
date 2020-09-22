@@ -2,18 +2,22 @@ import numpy as np
 from .utils import getIdx
 
 
+# _datetime      = All datetime
+# datetime      = Selected datetime
+
 def checkTemporal(netcdf2d,obj):
   """ Check Temporal parameters
   """
-  obj['dt']=None
+  
   if obj['itime'] is not None:
-    if not isinstance(obj['itime'],list):obj['itime']=[obj['itime']]
-    obj['datetime']=netcdf2d.query({"variable":"time","itime":obj.get('time')})
+    obj['user_time']=False
+    if isinstance(obj['itime'],int):obj['itime']=[obj['itime']]
     obj['start']=None
     obj['end']=None
     obj['step']=None
   elif obj['start'] is not None or obj['end'] is not None:
-    obj['datetime']=dt=netcdf2d.query({"variable":"time","itime":getIdx(obj,'time')})
+    obj['user_time']=True
+    dt=obj['_datetime']=netcdf2d.query({"variable":"time"})
     mindt=np.min(dt)
     maxdt=np.max(dt)
     
@@ -27,13 +31,16 @@ def checkTemporal(netcdf2d,obj):
     if obj['start']<mindt:raise Exception("{0} below limit of {1}".format(obj['start'],np.min(dt)))
     if obj['end']>maxdt:raise Exception("{0} below limit of {1}".format(obj['end'],np.max(dt)))
     
-    obj['_datetime']=_datetime= np.arange(obj['start'], obj['end'],obj['step'], dtype='datetime64[h]')
-    _i0=np.argsort(np.abs(dt - mindt))[0] # Closest index
-    _i1=np.argsort(np.abs(dt - maxdt))[1] # Second closest
+    obj['datetime']= np.arange(obj['start'], obj['end'],obj['step'], dtype='datetime64[h]')
     
-    i1=np.maximum(_i0,_i1) # id1 is the front index
-    i0=np.minimum(_i0,_i1) # id0 is the back index
-    obj['itime']=np.arange(i0,i1,dtype="int")
+    # Get minimum index
+    _s=np.argsort(np.abs(dt - mindt)) 
+    s=np.minimum(_s[0],_s[1]) 
+    
+    # Get maximum index
+    _e=np.argsort(np.abs(dt - maxdt))
+    e=np.maximum(_e[0],_e[1]) 
+    
+    obj['itime']=np.arange(s,e,dtype="int")
   
   return obj
-  

@@ -1,8 +1,8 @@
-import numpy as np
-import s3netcdfapi.interpolation as inter
-from s3netcdfapi.parameters import getParameters
-from s3netcdf import NetCDF2D
 import pytest
+import numpy as np
+from s3netcdf import NetCDF2D
+import s3netcdfapi.query.interpolation as inter
+from s3netcdfapi.parameters import getParameters
 
 input={
   "name":"input1",
@@ -18,12 +18,12 @@ def test_timeSeries():
     _datetime= np.arange('2000-01-01', '2000-02-01', np.timedelta64(1, 'h'), dtype='datetime64[s]')
     datetime= np.arange('2000-01-10T00:15', '2000-01-11', np.timedelta64(1, 'h'), dtype='datetime64[s]')
     data=np.arange(len(_datetime))
-    np.testing.assert_array_equal(inter.timeSeries(_datetime,datetime,data),np.arange(216,240)+0.25)
+    np.testing.assert_array_equal(inter.timeSeriesLinear(_datetime,datetime,data),np.arange(216,240)+0.25)
     
     # Test 2 - Assuming 3 time-series
     data=np.arange(len(_datetime)*3).reshape(3,len(_datetime)).T
     r2=np.append(np.arange(216,240)+0.25,[np.arange(960,984)+0.25,np.arange(1704,1728)+0.25]).reshape(3,24).T
-    np.testing.assert_array_equal(inter.timeSeries(_datetime,datetime,data),r2)
+    np.testing.assert_array_equal(inter.timeSeriesLinear(_datetime,datetime,data),r2)
 
 def test_barycentric():
     elem=netcdf2d['elem','elem'].astype("int")
@@ -56,55 +56,11 @@ def test_timeSeries_barycentric():
     _u2=inter.barycentric(elem,x,y,points,_u2.T).T
     np.testing.assert_almost_equal(_u1,_u2) 
 
-def test_getInode():
-  obj={
-      'meshx':None,'meshy':None,'elem':None,
-      'x':[-159.95,-159.85,-159.75,-159.65],
-      'y':[40.0,40.0,40.0,40.0],
-      'pointer':{      
-        "meshx":{"group":"node",'variable':'x'},
-        "meshy":{"group":"node",'variable':'y'},
-        "elem":{"group":"elem",'variable':'elem'}}}
-  inter.getInode(netcdf2d,obj,'u')
-
-def test_IDW():
-    # Test 1
-    parameters1={'variable':'u','longitude':[-159.9,-159.9],'latitude':[40.0,40.0],'itime':0}
-    obj1=getParameters(netcdf2d,parameters1)
-    print(inter.IDW(netcdf2d,obj1,'u'))
-    
-# def test_linear():
-#     # Test 1
-#     parameters1={'variable':'u','longitude':[-159.95,-159.85,-159.75],'latitude':[40.0,40.0,40.0],'itime':0}
-#     obj1=getParameters(netcdf2d,parameters1)
-#     print(inter.linear(netcdf2d,obj1,'u'))
-    
-
-def test_closest():
-    # Test 1
-    i=list(np.arange(1,dtype="int"))
-    parameters1={'variable':'u','longitude':[-159.95,-159.85,-159.75],'latitude':[40.0,40.0,40.0],'itime':i}
-    
-    obj1=getParameters(netcdf2d,parameters1)
-    print(inter.closest(netcdf2d,obj1,'u').shape)
-    
-
-def test_tlinear():
-    inter.tlinear()
-    
-
-def test_tclosest():
-    inter.tclosest()
-    
+  
 
 if __name__ == "__main__":
-    # test_timeSeries()
+  # test_timeSeriesClosest()
+  test_timeSeriesLinear()
   # test_barycentric()
-  test_timeSeries_barycentric()
-  # test_getInode()
+  # test_timeSeries_barycentric()
   
-#   test_IDW()
-  
-#   test_closest()
-#   test_tlinear()
-#   test_tclosest()

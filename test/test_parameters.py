@@ -13,20 +13,44 @@ input={
 
 default={
   'export':{"default":"json","type":str},
-  'mesh':{"default":False,"type":bool},
+  "dataOnly":{"default":False,"type":bool},
   'variable':{"default":None,"type":(str,list)},
-  'inode':{"default":None,"type":(int,slice,list)},
+  
+  'inode':{"default":None,"type":(int,list,slice)},
   'longitude':{"default":None,"type":(float,list)},
   'latitude':{"default":None,"type":(float,list)},
   'x':{"default":None,"type":(float,list)},
   'y':{"default":None,"type":(float,list)},
-  'itime':{"default":None,"type":(int,slice,list)},
+  
+  'isnode':{"default":None,"type":(int,list,slice)},
+  'slongitude':{"default":None,"type":(float,list)},
+  'slatitude':{"default":None,"type":(float,list)},    
+  'sx':{"default":None,"type":(float,list)},
+  'sy':{"default":None,"type":(float,list)},    
+  
+  'itime':{"default":None,"type":(int,list,slice)},
   'start':{"default":None,"type":str},
   'end':{"default":None,"type":str},
   'step':{"default":1,"type":int},
   'stepUnit':{"default":'h',"type":str},
-  'smethod':{"default":'closest',"type":str},
-  'tmethod':{"default":'closest',"type":str},
+
+  
+    
+  # 'pointer':{"default":{
+  #   "meshx":{'variable':'x'},
+  #   "meshy":{'variable':'y'},
+  #   "elem":{'variable':'elem'},
+  #   "time":{'variable':'time'},
+  #   "sx":{'variable':'sx'},
+  #   "sy":{'variable':'sy'},
+  #   "dimensions":{"itime":'itime',"inode":'inode',"isnode":'isnode'},
+  #   },"type":(object)},
+        
+  
+  # 'meshx':{"default":None,"type":(float,list)},
+  # 'meshy':{"default":None,"type":(float,list)},
+  # 'elem':{"default":None,"type":(float,list)},
+  
 }
 
 netcdf2d=NetCDF2D(input)
@@ -45,33 +69,36 @@ def test_getGroups():
 def test_parseParameters():
   # Test1
   obj1=copy.deepcopy(default)
-  parameters1={'variable':'[u,v]','itime':'0:10','mesh':'True','step':'2'}
-  assert parseParameters(obj1,parameters1)=={'export':'json','mesh': True, 'variable': ['u', 'v'], 'inode': None, 'longitude': None, 'latitude': None, 'x': None, 'y': None, 'itime': slice(0, 10, None), 'start': None, 'end': None, 'step': 2, 'stepUnit': 'h', 'smethod': 'closest', 'tmethod': 'closest'}
+  parameters1={'variable':'[u,v]','itime':'0:10','step':'2'}
+  
+  assert parseParameters(obj1,parameters1)=={'export': 'json', 'dataOnly': False, 'variable': ['u', 'v'], 'inode': None, 'longitude': None, 'latitude': None, 'x': None, 'y': None, 'isnode': None, 'slongitude': None, 'slatitude': None, 'sx': None, 'sy': None, 'itime': slice(0, 10, None), 'start': None, 'end': None, 'step': 2, 'stepUnit': 'h'}
   
   # Test2
   obj2=copy.deepcopy(default)
-  parameters2={'variable':'u,v]','itime':':10','mesh':'False'}
-  assert parseParameters(obj2,parameters2)=={'export': 'json', 'mesh': False, 'variable': ['u', 'v'], 'inode': None, 'longitude': None, 'latitude': None, 'x': None, 'y': None, 'itime': slice(None, 10, None), 'start': None, 'end': None, 'step': 1, 'stepUnit': 'h', 'smethod': 'closest', 'tmethod': 'closest'}
+  parameters2={'variable':'u,v]','itime':':10'}
+  assert parseParameters(obj2,parameters2)=={'export': 'json', 'dataOnly': False, 'variable': ['u', 'v'], 'inode': None, 'longitude': None, 'latitude': None, 'x': None, 'y': None, 'isnode': None, 'slongitude': None, 'slatitude': None, 'sx': None, 'sy': None, 'itime': slice(None, 10, None), 'start': None, 'end': None, 'step': 1, 'stepUnit': 'h'}
   
   # Test3
   obj3=copy.deepcopy(default)
   parameters3={'variable':'u,v'}
-  assert parseParameters(obj3,parameters3)=={'export': 'json', 'mesh': False, 'variable': ['u', 'v'], 'inode': None, 'longitude': None, 'latitude': None, 'x': None, 'y': None, 'itime': None, 'start': None, 'end': None, 'step': 1, 'stepUnit': 'h', 'smethod': 'closest', 'tmethod': 'closest'}
+  
+  assert parseParameters(obj3,parameters3)=={'export': 'json', 'dataOnly': False, 'variable': ['u', 'v'], 'inode': None, 'longitude': None, 'latitude': None, 'x': None, 'y': None, 'isnode': None, 'slongitude': None, 'slatitude': None, 'sx': None, 'sy': None, 'itime': None, 'start': None, 'end': None, 'step': 1, 'stepUnit': 'h'}
  
   # Test4
   obj4=copy.deepcopy(default)
   parameters4={'variable':'u,v','longitude':'0.1,0.2'}
-  assert parseParameters(obj4,parameters4)=={'export': 'json', 'mesh': False, 'variable': ['u', 'v'], 'inode': None, 'longitude': [0.1,0.2], 'latitude': None, 'x': None, 'y': None, 'itime': None, 'start': None, 'end': None, 'step': 1, 'stepUnit': 'h', 'smethod': 'closest', 'tmethod': 'closest'}
+  
+  assert parseParameters(obj4,parameters4)=={'export': 'json', 'dataOnly': False, 'variable': ['u', 'v'], 'inode': None, 'longitude': [0.1, 0.2], 'latitude': None, 'x': None, 'y': None, 'isnode': None, 'slongitude': None, 'slatitude': None, 'sx': None, 'sy': None, 'itime': None, 'start': None, 'end': None, 'step': 1, 'stepUnit': 'h'}
 
-  # Test5
+  # # Test5
   obj5=copy.deepcopy(default)
   parameters5={'variable':'u,v','longitude':[0.1,0.2]}
-  assert parseParameters(obj5,parameters5)=={'export': 'json', 'mesh': False, 'variable': ['u', 'v'], 'inode': None, 'longitude': [0.1,0.2], 'latitude': None, 'x': None, 'y': None, 'itime': None, 'start': None, 'end': None, 'step': 1, 'stepUnit': 'h', 'smethod': 'closest', 'tmethod': 'closest'}
+  assert parseParameters(obj5,parameters5)=={'export': 'json', 'dataOnly': False, 'variable': ['u', 'v'], 'inode': None, 'longitude': [0.1, 0.2], 'latitude': None, 'x': None, 'y': None, 'isnode': None, 'slongitude': None, 'slatitude': None, 'sx': None, 'sy': None, 'itime': None, 'start': None, 'end': None, 'step': 1, 'stepUnit': 'h'}
   
   # Test6
   obj6=copy.deepcopy(default)
   parameters6={'variable':'u,v','longitude':[0.1,'0.2']}
-  assert parseParameters(obj6,parameters6)=={'export': 'json', 'mesh': False, 'variable': ['u', 'v'], 'inode': None, 'longitude': [0.1,0.2], 'latitude': None, 'x': None, 'y': None, 'itime': None, 'start': None, 'end': None, 'step': 1, 'stepUnit': 'h', 'smethod': 'closest', 'tmethod': 'closest'}
+  assert parseParameters(obj6,parameters6)=={'export': 'json', 'dataOnly': False, 'variable': ['u', 'v'], 'inode': None, 'longitude': [0.1, 0.2], 'latitude': None, 'x': None, 'y': None, 'isnode': None, 'slongitude': None, 'slatitude': None, 'sx': None, 'sy': None, 'itime': None, 'start': None, 'end': None, 'step': 1, 'stepUnit': 'h'}
   
   # Test7
   obj7=copy.deepcopy(default)
@@ -85,6 +112,10 @@ def test_parseParameters():
 
 
 def test_checkSpatial():
+  default['inter.spatial']={"default":'closest',"type":str}
+  default['inter.temporal']={"default":'closest',"type":str}
+  default['inter.spectral']={"default":'closest',"type":str}
+  
   # Test 1
   obj1=copy.deepcopy(default)
   parameters1={'longitude':0.1,'latitude':0.2}
@@ -96,19 +127,28 @@ def test_checkSpatial():
   parameters2={'longitude':[0.1,0.1],'latitude':[0.2,0.2]}
   r2=checkSpatial(netcdf2d,parseParameters(obj2,parameters2))
   np.testing.assert_array_equal(r2['xy'],[[0.1, 0.2],[0.1, 0.2]])
+  np.testing.assert_array_equal(r2['xyIndex'],[0,0])
   
   # Test 3
   obj3=copy.deepcopy(default)
-  parameters3={'longitude':[0.1,0.1],'latitude':[0.2,0.2],'inode':'0:10'}
+  parameters3={'longitude':[0.1,0.1],'latitude':[0.2,0.2],'inter.spatial':"linear"}
   r3=checkSpatial(netcdf2d,parseParameters(obj3,parameters3))
-  assert r3=={'export': 'json', 'mesh': False, 'variable': None, 'inode': [slice(0, 10, None)], 'x': None, 'y': None, 'itime': None, 'start': None, 'end': None, 'step': 1, 'stepUnit': 'h', 'smethod': 'closest', 'tmethod': 'closest', 'xy': None}
+  np.testing.assert_array_equal(r3['xy'],[[0.1, 0.2],[0.1, 0.2]])
+  np.testing.assert_array_almost_equal(r3['meshx'],[-150.,-150.1000061,-150.])
+  np.testing.assert_array_almost_equal(r3['meshy'],[50.,50.09999847,50.09999847])
+  
+  # Test 4
+  obj4=copy.deepcopy(default)
+  parameters4={'longitude':[0.1,0.1],'latitude':[0.2,0.2],'inode':'0:10'}
+  r4=checkSpatial(netcdf2d,parseParameters(obj4,parameters4))
+  assert r4['inode']==slice(0, 10, None)
 
 def test_checkTemporal():
   # Test 1
   obj1=copy.deepcopy(default)
   parameters1={'itime':0,'start':'2000-01-01'}
   r1=checkTemporal(netcdf2d,parseParameters(obj1,parameters1))
-  assert r1=={'export': 'json', 'mesh': False, 'variable': None, 'inode': None, 'longitude': None, 'latitude': None, 'x': None, 'y': None, 'itime': [0], 'start': None, 'end': None, 'step': None, 'stepUnit': 'h', 'smethod': 'closest', 'tmethod': 'closest', 'dt': None}
+  assert r1=={'export': 'json', 'dataOnly': False, 'variable': None, 'inode': None, 'longitude': None, 'latitude': None, 'x': None, 'y': None, 'isnode': None, 'slongitude': None, 'slatitude': None, 'sx': None, 'sy': None, 'itime': [0], 'start': None, 'end': None, 'step': None, 'stepUnit': 'h', 'user_time': False}
 
   # Test 2
   obj2=copy.deepcopy(default)
@@ -122,13 +162,13 @@ def test_checkExport():
 
   # Test 1
   obj1=copy.deepcopy(default)
-  parameters1={'mesh':True,'export':'csv'}
-  with pytest.raises(Exception):assert checkExport(netcdf2d,parseParameters(obj1,parameters1))
+  # parameters1={'mesh':True,'export':'csv'}
+  # with pytest.raises(Exception):assert checkExport(netcdf2d,parseParameters(obj1,parameters1))
   
   # Test 2
-  obj2=copy.deepcopy(default)
-  parameters2={'mesh':True,'export':'geojson','variable':'u'}
-  with pytest.raises(Exception):assert checkExport(netcdf2d,parseParameters(obj2,parameters2))  
+  # obj2=copy.deepcopy(default)
+  # parameters2={'mesh':True,'export':'geojson','variable':'u'}
+  # with pytest.raises(Exception):assert checkExport(netcdf2d,parseParameters(obj2,parameters2))  
   
   # Test 3
   obj3=copy.deepcopy(default)
@@ -138,49 +178,21 @@ def test_checkExport():
 def test_getParameters():
 
   # Test 1
-  parameters1={'variable':'u','longitude':[0.1,0.1],'latitude':[0.2,0.2],'itime':0}
-  obj=getParameters(netcdf2d,parameters1)
-  # del r1['xy']
-  # del r1['pointer']
-  # assert r1=={'export': 'json', 'mesh': False, 'variable': [], 'inode': None, 'meshx': None, 'meshy': None, 'elem': None, 'x': [0.1, 0.1], 'y': [0.2, 0.2], 'itime': [0], 'start': None, 'end': None, 'step': None, 'stepUnit': 'h', 'smethod': 'closest', 'tmethod': 'closest', 'groups': [], 'ngroups': 0, 'isTable': False, 'dt': None}
-  # print(r1)
+  parameters={'variable':'u','longitude':[0.1,0.1],'latitude':[0.2,0.2],'itime':0}
+  obj=getParameters(netcdf2d,parameters)
+  np.testing.assert_array_equal(obj['xyIndex'],[0,0])
   
-  # Get data
-  data={}
-  for variable in obj['variable']:
-    dimensions=netcdf2d.getDimensionsByVariable(variable)
-    tmp=[]
-    for dimension in dimensions:
-      if not dimension in obj['methods']:raise Exception("No method was specified for {}".format(dimension))
-      # if obj['methods'][dimension]=='spatial': getSpatialIdx
-      # if obj['methods'][dimension]=='temporal': getTemporalIdx
-    # if len(tmp)>1 and spatial>temporal, change spatial to all
-    # elif len(tmp)>1 and temporal>spatial, 
-    # else if temoral> timesries, spatial>
-    # Get Data
-    
-        
-    # conditions=[obj['methods'][dimension] for dimension in dimensions]
-    # if 'spectral' in conditions:
-    #   None # get x,y
-    # elif 'spatial' in conditions and 'temporal'in conditions:
-    #   None
-    # elif 'spatial' in conditions:
-    #   None
-    # elif 'temporal' in conditions:
-    #   None  
-    # else:
-    #   None
-    #   # if obj['methods'][dimension]=='spatial': getSpatialIdx
-    #   # if obj['methods'][dimension]=='temporal': getSpatialIdx
-    #   print(obj['methods'][dimension])
-
+  parameters={"export":"geojson",'variable':'mesh'}
+  obj=getParameters(netcdf2d,parameters)
+  # print(obj)
+  # np.testing.assert_array_equal(obj['xyIndex'],[0,0])
+  
 
 
 if __name__ == "__main__":
-  # test_getGroups()
-  # test_parseParameters()
-  # test_checkSpatial()
-  # test_checkTemporal()
-  # test_checkExport()
+  test_getGroups()
+  test_parseParameters()
+  test_checkSpatial()
+  test_checkTemporal()
+  test_checkExport()
   test_getParameters()

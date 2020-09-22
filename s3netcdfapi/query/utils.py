@@ -8,11 +8,11 @@ def cleanObject(obj,dimensions):
   Parameters
   ----------
   obj:object
-  dimensions={nnode,ntime}
+  dimensions=list,['nnode','ntime']
   
   Notes
   -----
-  idimensions={inode,itime}
+  idimensions=['inode','itime']
     
   """
   if not 'variable' in obj:raise Exception("Add {} to the default parameter object".format('variable'))
@@ -37,14 +37,14 @@ def swapAxe(data,dimensionNames,name,i=0):
   name:str,name of dimension to be swap
   i:int, index to be swap
   """
-  if data.dim!=len(dimensionNames):raise Exception("List size should equal to data dimensions")
+  if data.ndim!=len(dimensionNames):raise Exception("List size should equal to data dimensions")
   index=dimensionNames.index(name)
   data=np.swapaxes(data, i, index) 
   dimensionNames[i], dimensionNames[index] = dimensionNames[index], dimensionNames[i]
   return data,dimensionNames
 
 
-def swapAxes(data,dimensionNames,names):
+def swapAxes(data,dimensionNames,names,return_dimensions=True):
   """
   Swap axes based on the specified dimension list
   Parameters
@@ -55,4 +55,5 @@ def swapAxes(data,dimensionNames,names):
   """
   for i,name in enumerate(names):
     data,dimensionNames=swapAxe(data,dimensionNames,name,i)
-  return data,dimensionNames 
+  if return_dimensions:return data,dimensionNames 
+  return data
