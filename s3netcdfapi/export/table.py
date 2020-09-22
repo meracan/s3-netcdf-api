@@ -1,26 +1,25 @@
 import numpy as np
 import pandas as pd
 
-
+import csv
 
 
 def table(obj,data):
   """
   """
-  dataframe = {}
-  for vname in data: #(x,y,bed)
+  df = pd.DataFrame()
+  for vname in data:
     _data=data[vname]
     if _data['dimData'] is None:
-      _header=data[vname]['header']
-      dataframe[_header]=_data
+      _header=_data['header']
+      df[_header]=_data['data'].flatten()
     else:
-      print("hello")
-      
-    
-    
-  # print(dataframe)  
-  # df = pd.DataFrame(data=dataframe)
-  # print(df)
+      if df.empty:
+        f,headers=dimData2Table(_data['data'],_data['dimData'])
+        df=df.from_records(csv.reader(f),columns=headers)
+      df[_data['header']]=_data['data'].flatten()
+  # df.to_csv('')    
+
 
 
 
@@ -65,23 +64,4 @@ def dimData2Table(data,dimData):
         
 
   a = np.char.strip(a.astype('<U{}'.format(maxLength)), ',')
-  print(a.flatten())
-  # return a,headers  
-  
-# def dimValuesMatrix(shape,dimensions):
-  
-#   a=np.chararray((np.prod(shape)), itemsize=maxLength).reshape(shape)
-#   a[:]=""
-  
-#   if len(shape)!=len(dimIndexValue):raise Exception("Shape of dimension index values does not match the data")
-#   for i,(ishape,indexValue) in enumerate(zip(shape,dimIndexValue)):
-#     if ishape!=len(indexValue):raise Exception("Error here {},{}".format(ishape,indexValue))    
-    
-#     t=[slice(None)for j in range(i)]
-#     for k in range(ishape):
-#         _t=tuple(list(t)+[k])
-#         if isinstance(a[_t],str):a[_t]=a[_t].encode()+indexValue[k]+b","
-#         else:a[_t]=a[_t]+indexValue[k]+b","
-        
-
-#   a = np.char.strip(a.astype('<U{}'.format(maxLength)), ',')
+  return a.flatten(),headers

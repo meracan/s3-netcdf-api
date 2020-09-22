@@ -1,6 +1,8 @@
 from .checkExport import checkExport
 from .checkSpatial import checkSpatial
 from .checkTemporal import checkTemporal
+from .checkSpectral import checkSpectral
+
 import numpy as np
 
 def getParameters(netcdf2d,_parameters):
@@ -53,6 +55,7 @@ def getParameters(netcdf2d,_parameters):
   obj=setGroups(netcdf2d,obj)
   obj=checkExport(netcdf2d,obj)
   obj=checkSpatial(netcdf2d,obj)
+  obj=checkSpectral(netcdf2d,obj)
   obj=checkTemporal(netcdf2d,obj)
   return obj
 

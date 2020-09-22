@@ -13,7 +13,7 @@ input={
 
 netcdf2d=NetCDF2D(input)
 
-def test_timeSeries():
+def test_timeSeriesLinear():
     # Test 1
     _datetime= np.arange('2000-01-01', '2000-02-01', np.timedelta64(1, 'h'), dtype='datetime64[s]')
     datetime= np.arange('2000-01-10T00:15', '2000-01-11', np.timedelta64(1, 'h'), dtype='datetime64[s]')

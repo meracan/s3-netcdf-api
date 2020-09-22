@@ -10,7 +10,7 @@ from .utils import getIdx
 # _sx     = Spectra point coordinate-x
 # _sy     = Spectra point coordinate-y
 
-def checkSpatial(netcdf2d,obj):
+def checkSpectral(netcdf2d,obj):
   """
   """
   if obj['slongitude'] is not None:obj['sx']=obj['slongitude'] # Test1
