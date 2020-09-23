@@ -8,6 +8,7 @@ import numpy as np
 def getParameters(netcdf2d,_parameters):
     
   default={
+    'output':{"default":"test/output","type":str},
     'export':{"default":"json","type":str},
     "dataOnly":{"default":False,"type":bool},
     # 'mesh':{"default":False,"type":bool},
@@ -34,7 +35,8 @@ def getParameters(netcdf2d,_parameters):
     'inter.spatial':{"default":'closest',"type":str},
     'inter.temporal':{"default":'closest',"type":str},
     'inter.spectral':{"default":'closest',"type":str},
-      
+    
+    'sep':{"default":',',"type":str},
     'pointer':{"default":{
       "meshx":{'variable':'x'},
       "meshy":{'variable':'y'},
@@ -64,11 +66,22 @@ def setGroups(netcdf2d,obj):
   if obj['variable'] is None: obj['variable']=[]
   
   if not isinstance(obj['variable'], list):obj['variable']=[obj['variable']]
+  if obj['export']=="slf" and not 'mesh' in obj['variable']:
+    obj['variable'].append('mesh')
   if 'mesh' in obj['variable']:
     if not 'x' in obj['variable']:obj['variable'].append('x')
     if not 'y' in obj['variable']:obj['variable'].append('y')
     if not 'elem' in obj['variable']:obj['variable'].append('elem')
     obj['variable'].remove('mesh')
+    obj['inode']=None
+    obj['x']=None
+    obj['y']=None
+    obj['latitude']=None
+    obj['longitude']=None
+    obj["dataOnly"]=True
+    
+  
+    
   
   obj['groups']=groups=getGroups(netcdf2d,obj)
   obj['ngroups']=ngroups=len(groups)
@@ -105,7 +118,8 @@ def parseParameters(obj,parameters):
   for o in obj:
     default=obj[o]['default']
     type=obj[o]['type']
-    newobject[o]=parseParameter(parameters.get(o,default),type)
+    if o=="sep":newobject[o]=parameters.get(o,default)
+    else:newobject[o]=parseParameter(parameters.get(o,default),type)
   return newobject  
 
 
@@ -135,9 +149,7 @@ def parseString(parameter,t):
   
   
 def parseParameter(parameter,types=str):
-  """ 
-  
-  Parse index query based on string 
+  """ Parse index query based on string 
   
   Parameters
   ----------
@@ -154,7 +166,7 @@ def parseParameter(parameter,types=str):
   
   if isinstance(parameter,str):parameter=parseString(parameter,t)
   if not list in list(types) and isinstance(parameter,list):
-    raise Exception("Parameter {} is not allowed to be a list") # Test 8
+    raise Exception("Parameter {} is not allowed to be a list".format(parameter)) # Test 8
   
   
   if isinstance(parameter,list):

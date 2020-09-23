@@ -3,11 +3,10 @@ import json
 import boto3
 
 from s3netcdf import NetCDF2D
-from export import export
 from parameters import getParameters
 from response import response
 from credentials import getCredentials
-from data.getData import getData
+import queryData
 
 def handler(event, context):
   try:
@@ -38,8 +37,7 @@ def query(parameters,credentials):
   
   # Export Metadata Only
   variable=parameters.get('variable',None)
-  mesh=parameters.get('mesh',None)
-  if variable is None and mesh is None:
+  if variable is None:
     meta=netcdf2d.meta()
     return response("application/json",False,json.dumps(meta)) 
   
@@ -47,9 +45,7 @@ def query(parameters,credentials):
   obj=getParameters(netcdf2d,parameters)
   
   # Get data
-  data={}
-  for variable in obj['variable']:
-    data[variable]=getData(netcdf2d,obj,variable)
+  data=
   
   # Export Data
   return response(**export(obj,data))

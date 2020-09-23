@@ -8,9 +8,8 @@ from .utils import getIdx
 def checkTemporal(netcdf2d,obj):
   """ Check Temporal parameters
   """
-  
+  obj['user_time']=False
   if obj['itime'] is not None:
-    obj['user_time']=False
     if isinstance(obj['itime'],int):obj['itime']=[obj['itime']]
     obj['start']=None
     obj['end']=None

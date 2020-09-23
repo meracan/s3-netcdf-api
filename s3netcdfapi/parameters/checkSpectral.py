@@ -19,9 +19,8 @@ def checkSpectral(netcdf2d,obj):
   del obj['slatitude']
   
     
-  
+  obj['user_sxy']=False
   if obj['isnode'] is not None: # Test3
-    obj['user_sxy']=False
     if isinstance(obj['isnode'],(int)):obj['isnode']=[obj['isnode']]
     obj['sx']=None
     obj['sy']=None

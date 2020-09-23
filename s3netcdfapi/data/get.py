@@ -3,6 +3,12 @@ from .interpolation import timeSeriesClosest,timeSeriesLinear,barycentric
 
 from .utils import cleanObject,swapAxes,swapAxe
 
+def get(netcdf2d,obj):
+  data={}
+  for variable in obj['variable']:
+    data[variable]=getData(netcdf2d,obj,variable)
+  return data
+
 
 def getData(netcdf2d,obj,variable,_odimensions=None):
   """
@@ -17,7 +23,8 @@ def getData(netcdf2d,obj,variable,_odimensions=None):
   
   
   """
-  _dimensions=netcdf2d.getDimensionsByVariable(variable)
+  # _dimensions=netcdf2d.getDimensionsByVariable(variable)
+  _dimensions=netcdf2d.getMetaByVariable(variable)['dimensions']
   if _odimensions is None:_odimensions=_dimensions
   
   # Get data from s3-NetCDF
@@ -42,26 +49,20 @@ def getData(netcdf2d,obj,variable,_odimensions=None):
   # Swap axes as required
   data,dimensions=swapAxes(data,dimensions,_odimensions)
 
+  print(dimensions)
   # Prepare return object
-  newObj={"data":data,"header":getHeader(netcdf2d,variable),"dimData":None}
+  newObj={"name":variable,"data":data,"meta":netcdf2d.getMetaByVariable(variable),"dimData":None,"dimensions":dimensions}
   if len(dimensions)==1 or obj['dataOnly']:return newObj
   
+  # print(dimensions,data.shape)
   # Get dimension data
   newObj['dimData']=getDimData(netcdf2d,obj,dimensions)
   return newObj
-  
-    
-def getHeader(netcdf2d,vname):
-  """ Get variable header by getting standard_name and units
-  """
-  meta=netcdf2d.getMetaByVariable(vname)
-  header=meta['standard_name']
-  if header!="Datetime" and meta['units']!="":header="{},{}".format(header,meta['units'])
-  return header
 
 
 def getDimData(netcdf2d,obj,dimensions):
-  """
+  """ Dim data is the dimension data of the array. For u velocity, shape is (ntime,nnode).
+  Dim data is the array of time and array of node (and array of x and y)
   """
   if obj['dataOnly'] or len(dimensions)==1:return None
   
@@ -75,8 +76,8 @@ def getDimData(netcdf2d,obj,dimensions):
         # TODO : add inode=arange(nnode)
           
       data.append([
-        {"data":obj['x'],"header":getHeader(netcdf2d,'x')},
-        {"data":obj['y'],"header":getHeader(netcdf2d,'y')}
+        {"name":"x","data":obj['x'],"meta":netcdf2d.getMetaByVariable('x')},
+        {"name":"y","data":obj['y'],"meta":netcdf2d.getMetaByVariable('y')}
         ])
       
     elif dim=="snode":
@@ -85,17 +86,19 @@ def getDimData(netcdf2d,obj,dimensions):
         obj['sy']=netcdf2d.query(cleanObject({**obj,'variable':'sy'},['isnode']))
         # TODO : add isnode=arange(nsnode)
       data.append([
-        {"data":obj['sx'],"header":getHeader(netcdf2d,'sx')},
-        {"data":obj['sy'],"header":getHeader(netcdf2d,'sy')}
+        {"name":"sx","data":obj['sx'],"meta":netcdf2d.getMetaByVariable('sx')},
+        {"name":"sy","data":obj['sy'],"meta":netcdf2d.getMetaByVariable('sy')}
         ])
       
     elif dim=="time":
       if not obj['user_time']:
         obj['datetime']=netcdf2d.query(cleanObject({**obj,'variable':'time'},['itime']))
         # TODO : add itime=arange(ntime)
-      data.append({"data":obj['datetime'],"header":getHeader(netcdf2d,'time')})
+      data.append({"name":dim,"data":obj['datetime'],"meta":netcdf2d.getMetaByVariable('time')})
+    elif dim=="pe":continue
+    elif dim=="elem":continue
     else:
       _data=netcdf2d.query(cleanObject({**obj,'variable':dim},['i{}'.format(dim)]))
-      data.append({"data":_data,"header":getHeader(netcdf2d,dim)})
+      data.append({"name":dim,"data":_data,"meta":netcdf2d.getMetaByVariable(dim)})
     
   return data

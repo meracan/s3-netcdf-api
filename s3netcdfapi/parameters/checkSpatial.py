@@ -26,9 +26,8 @@ def checkSpatial(netcdf2d,obj):
   del obj['latitude']
   
     
-  
+  obj['user_xy']=False
   if obj['inode'] is not None: # Test3
-    obj['user_xy']=False
     if isinstance(obj['inode'],(int)):obj['inode']=[obj['inode']]
     obj['x']=None
     obj['y']=None

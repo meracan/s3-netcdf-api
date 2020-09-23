@@ -35,22 +35,6 @@ default={
   'stepUnit':{"default":'h',"type":str},
 
   
-    
-  # 'pointer':{"default":{
-  #   "meshx":{'variable':'x'},
-  #   "meshy":{'variable':'y'},
-  #   "elem":{'variable':'elem'},
-  #   "time":{'variable':'time'},
-  #   "sx":{'variable':'sx'},
-  #   "sy":{'variable':'sy'},
-  #   "dimensions":{"itime":'itime',"inode":'inode',"isnode":'isnode'},
-  #   },"type":(object)},
-        
-  
-  # 'meshx':{"default":None,"type":(float,list)},
-  # 'meshy':{"default":None,"type":(float,list)},
-  # 'elem':{"default":None,"type":(float,list)},
-  
 }
 
 netcdf2d=NetCDF2D(input)

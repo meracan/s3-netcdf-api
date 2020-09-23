@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from s3netcdf import NetCDF2D
 from s3netcdfapi.query.utils import cleanObject,swapAxe,swapAxes
-from s3netcdfapi.query.get import getData,getHeader,getDimensionValues
+from s3netcdfapi.query.get import getData,getHeader
 
 
 input={
@@ -43,7 +43,7 @@ def test_swapAxes():
     
 def test_getHeader():
   assert getHeader(netcdf2d,"x")=="Longitude"
-  assert getHeader(netcdf2d,"u")=="U Velocity,m/s"
+  # assert getHeader(netcdf2d,"u")=="U Velocity,m/s"
   
     
 def test_getDimensionValues():
@@ -77,6 +77,7 @@ def test_getDimensionValues():
   
 
 def test_getData():
+  None
   
   # np.testing.assert_array_equal(getData(netcdf2d,{"inode":[0,1]},"x")['data'],netcdf2d['node','x',[0,1]])
   # np.testing.assert_array_equal(getData(netcdf2d,{"itime":[0]},"u",["ntime","nnode"])['data'],netcdf2d['s','u',0])
@@ -88,6 +89,6 @@ if __name__ == "__main__":
   # test_cleanObject()
   # test_swapAxe()
   # test_swapAxes()
-  # test_getHeader()
+  test_getHeader()
   # test_getDimensionValues()
-  test_getData()
+  # test_getData()
