@@ -12,23 +12,24 @@ from .utils import getIdx
 # elem   = Selected elements from mesh
 
 def getMesh(netcdf2d,obj):
-  if not '_meshx' in obj or obj['_meshx'] is None:obj['_meshx']=netcdf2d.query({"variable":"x"})
-  if not '_meshy' in obj or obj['_meshy'] is None:obj['_meshy']=netcdf2d.query({"variable":"y"})
-  if not '_elem' in obj or obj['_elem'] is None: obj['_elem']=netcdf2d.query({"variable":"elem"})
+  mesh=netcdf2d.getMeshMeta()
+  if not '_meshx' in obj or obj['_meshx'] is None:obj['_meshx']=netcdf2d.query({"variable":mesh['x']})
+  if not '_meshy' in obj or obj['_meshy'] is None:obj['_meshy']=netcdf2d.query({"variable":mesh['y']})
+  if not '_elem' in obj or obj['_elem'] is None: obj['_elem']=netcdf2d.query({"variable":mesh['elem']})
   return obj
 
-def checkSpatial(netcdf2d,obj):
+def checkSpatial(netcdf2d,obj,dname,type='mesh'):
   """
   """
   if obj['longitude'] is not None:obj['x']=obj['longitude'] # Test1
   if obj['latitude'] is not None:obj['y']=obj['latitude']
   del obj['longitude']
   del obj['latitude']
-  
+  idname="i"+dname[1:]
     
   obj['user_xy']=False
-  if obj['inode'] is not None: # Test3
-    if isinstance(obj['inode'],(int)):obj['inode']=[obj['inode']]
+  if obj[idname] is not None: # Test3
+    if isinstance(obj[idname],(int)):obj[idname]=[obj[idname]]
     obj['x']=None
     obj['y']=None
     obj['xy']=None
@@ -41,14 +42,17 @@ def checkSpatial(netcdf2d,obj):
     obj['x']=np.array(obj['x'])
     obj['y']=np.array(obj['y'])
     obj['xy']=np.column_stack((obj['x'],obj['y']))
-    if obj['inter.spatial']=='closest':obj=closest(netcdf2d,obj)
-    elif obj['inter.spatial']=='linear':obj=linear(netcdf2d,obj)
-    else:raise Exception("closest and linear are exepted ({})".format(obj['interpolation']['spatial']))
-  
+    if type=="mesh":
+      if obj['inter.mesh']=='closest':obj=closest(netcdf2d,obj,idname)
+      elif obj['inter.mesh']=='linear':obj=linear(netcdf2d,obj,idname)
+      else:raise Exception("Unknown ({}) interpolation for inter.mesh".format(obj['inter.mesh']))
+    elif type=="xy":
+      if obj['inter.xy']=='closest':obj=closestXY(netcdf2d,obj,dname,idname)
+      else:raise Exception("Unknown ({}) interpolation for inter.xy".format(obj['inter.xy']))
   return obj
 
 
-def linear(netcdf2d,obj):
+def linear(netcdf2d,obj,idname):
   """
   """
   obj=getMesh(netcdf2d,obj)
@@ -56,22 +60,40 @@ def linear(netcdf2d,obj):
   trifinder = tri.get_trifinder()
   ielem=trifinder.__call__(obj['x'], obj['y'])
   idx=obj['_elem'][ielem].astype("int32")
-  inode=np.unique(idx)
+  inode,nodeIndex=np.unique(idx,return_inverse=True)
   obj['meshx']=obj['_meshx'][inode]
   obj['meshy']=obj['_meshy'][inode]
-  obj['elem']=obj['_elem'][ielem]
-  obj['inode']=inode
+  obj['elem']=nodeIndex.reshape(idx.shape)
+  obj[idname]=inode
   return obj
 
 
-def closest(netcdf2d,obj):
+def closest(netcdf2d,obj,idname):
   """
   """  
   obj=getMesh(netcdf2d,obj)
   _meshxy=np.column_stack((obj['_meshx'],obj['_meshy']))
   kdtree = cKDTree(_meshxy)
   distance,inode=kdtree.query(obj['xy'],1)
-  inode,xyIndex=np.unique(inode.ravel(),return_inverse=True)
-  obj['inode']=inode
+  inode,nodeIndex=np.unique(inode.ravel(),return_inverse=True)
+  obj[idname]=inode
+  obj['nodeIndex']=nodeIndex
+  return obj
+
+def closestXY(netcdf2d,obj,dname,idname):
+  """
+  """
+  vnames=netcdf2d.getVariablesByDimension(dname)
+  x=next(x for x in vnames if x in obj['pointers']['xy']['x'])
+  y=next(x for y in vnames if y in obj['pointers']['xy']['y'])
+  
+  obj['_x']=netcdf2d.query({"variable":x})
+  obj['_y']=netcdf2d.query({"variable":y})
+
+  sxy=np.column_stack((obj['_x'],obj['_y']))
+  kdtree = cKDTree(sxy)
+  distance,isnode=kdtree.query(obj['xy'],1)
+  isnode,xyIndex=np.unique(isnode.ravel(),return_inverse=True)
+  obj[idname]=isnode
   obj['xyIndex']=xyIndex
   return obj

@@ -50,5 +50,7 @@ def closest(netcdf2d,obj):
   sxy=np.column_stack((obj['_sx'],obj['_sy']))
   kdtree = cKDTree(sxy)
   distance,isnode=kdtree.query(sxy,1)
+  isnode,xyIndex=np.unique(isnode.ravel(),return_inverse=True)
   obj['isnode']=isnode
+  obj['xyIndex']=xyIndex
   return obj

@@ -1,36 +1,34 @@
-from .checkExport import checkExport
-from .checkSpatial import checkSpatial
-from .checkTemporal import checkTemporal
-from .checkSpectral import checkSpectral
-
+import os
+import uuid
 import numpy as np
+from .checkExport import checkExport
+from .newCheck import check
+
+
 
 def getParameters(netcdf2d,_parameters):
-  
-  template={
-    "mesh":{"x":"lat","y":"lng"},
-    "points":{"x":"sx","y":"sx"}
-  }
+
+  pointers={"pointers":{
+    "mesh":{"dimensions":["nnode"],"x":["x","lng",'longitude','lon'],"y":["y","lat","latitude"],"node":["node"]},
+    "temporal":{"dimensions":["ntime"],"time":["time"]},
+    "xy":{"dimensions":["nsnode"],"x":["x","sx"],"y":["y","sy"],"snode":["snode"]},
+    }}
   
     
   default={
-    'output':{"default":"output","type":str},
+    'cache':{"default":r"../s3/tmp","type":str},
     'export':{"default":"json","type":str},
     "dataOnly":{"default":False,"type":bool},
     # 'mesh':{"default":False,"type":bool},
     'variable':{"default":None,"type":(str,list)},
     
     'inode':{"default":None,"type":(int,list,slice)},
+    'isnode':{"default":None,"type":(int,list,slice)},
     'longitude':{"default":None,"type":(float,list)},
     'latitude':{"default":None,"type":(float,list)},
     'x':{"default":None,"type":(float,list)},
     'y':{"default":None,"type":(float,list)},
-    
-    'isnode':{"default":None,"type":(int,list,slice)},
-    'slongitude':{"default":None,"type":(float,list)},
-    'slatitude':{"default":None,"type":(float,list)},    
-    'sx':{"default":None,"type":(float,list)},
-    'sy':{"default":None,"type":(float,list)},    
+ 
     
     'itime':{"default":None,"type":(int,list,slice)},
     'start':{"default":None,"type":str},
@@ -38,19 +36,19 @@ def getParameters(netcdf2d,_parameters):
     'step':{"default":1,"type":int},
     'stepUnit':{"default":'h',"type":str},
     
-    'inter.spatial':{"default":'closest',"type":str},
+    'inter.mesh':{"default":'closest',"type":str},
     'inter.temporal':{"default":'closest',"type":str},
-    'inter.spectral':{"default":'closest',"type":str},
+    'inter.xy':{"default":'closest',"type":str},
     
     'sep':{"default":',',"type":str},
+    
   }
-  
   obj=parseParameters(default,_parameters)
+  obj['filepath']=os.path.join(obj['cache'],str(uuid.uuid4()))
+  obj={**pointers,**obj}
   obj=setGroups(netcdf2d,obj)
   obj=checkExport(netcdf2d,obj)
-  obj=checkSpatial(netcdf2d,obj)
-  obj=checkSpectral(netcdf2d,obj)
-  obj=checkTemporal(netcdf2d,obj)
+  obj=check(netcdf2d,obj)
   return obj
 
 

@@ -5,6 +5,7 @@ from netCDF4 import Dataset
 from s3netcdf import NetCDF2D
 from s3netcdfapi.data.get import get,getData,getDimData
 from s3netcdfapi.export.table import _getMeta,getMeta,combineValues,dimData2Table
+from s3netcdfapi.parameters import getParameters
 import s3netcdfapi.export as export
 input={
   "name":"input1",
@@ -22,8 +23,8 @@ def test__getMeta():
   assert _getMeta(meta,type="units")=="m"
  
 def test_getMeta():
-  obj={"user_sxy":False,"user_xy":False,"user_time":False,"dataOnly":False}
-  data=getData(netcdf2d,{**obj,"inode":[0,1]},"u")
+  
+  data=getData(netcdf2d,getParameters(netcdf2d,{"inode":[0,1],"variable":"u"}),"u")
   dimData=data['dimData']
   assert getMeta(dimData,"header")==['Datetime','Longitude','Latitude']
   assert getMeta(dimData,"type")==['float64','float32','float32']
@@ -33,16 +34,13 @@ def test_getMeta():
 
 
 def test_combineValues():
-  obj={"user_sxy":False,"user_xy":False,"user_time":False,"dataOnly":False}
-  
-  data=getData(netcdf2d,{**obj,"inode":[0,1]},"u")
+  data=getData(netcdf2d,getParameters(netcdf2d,{"inode":[0,1],"variable":"u"}),"u")
   dimData=data['dimData']
   assert combineValues(dimData['node']['subdata'])[0]=='-160.0,40.0'
  
  
 def test_dimData2Table():
-  obj={"user_sxy":False,"user_xy":False,"user_time":False,"dataOnly":False}
-  data=getData(netcdf2d,{**obj,"inode":[0,1]},"u")
+  data=getData(netcdf2d,getParameters(netcdf2d,{"inode":[0,1],"variable":"u"}),"u")
   dimData=data['dimData']
   assert dimData2Table(data['data'],dimData)[0]=='2000-01-01T00:00:00,-160.0,40.0'
   

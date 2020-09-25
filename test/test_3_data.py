@@ -3,6 +3,7 @@ import numpy as np
 from s3netcdf import NetCDF2D
 from s3netcdfapi.data.utils import cleanObject,swapAxe,swapAxes
 from s3netcdfapi.data.get import get,getData,getDimData
+from s3netcdfapi.parameters import getParameters
 
 
 input={
@@ -42,27 +43,25 @@ def test_swapAxes():
   
 def test_getDimData():
   # Test 1
-  obj={"user_sxy":False,"user_xy":False,"user_time":False,"dataOnly":False}
-  dimensions=['ntime','nnode']
-  variables=getDimData(netcdf2d,obj,dimensions)
+  obj=getParameters(netcdf2d,{'variable':'u'})
+  variables=getDimData(netcdf2d,obj,['ntime','nnode'])
   np.testing.assert_array_equal(variables['time']['data'],netcdf2d['time','time'])
   assert variables['node']['data']==None
   np.testing.assert_array_equal(variables['node']['subdata']['x']['data'],netcdf2d['node','x'])
   np.testing.assert_array_equal(variables['node']['subdata']['y']['data'],netcdf2d['node','y'])
   
   # Test 2
-  dimensions=['ntime','nsnode']
-  variables=getDimData(netcdf2d,obj,dimensions)
-  np.testing.assert_array_equal(variables['snode']['subdata']['sx']['data'],netcdf2d['snode','sx'])
-  np.testing.assert_array_equal(variables['snode']['subdata']['sy']['data'],netcdf2d['snode','sy'])
+  obj=getParameters(netcdf2d,{'variable':'spectra'})
+  variables=getDimData(netcdf2d,obj,['ntime','nsnode','nfreq','ndir'])
+  np.testing.assert_array_equal(variables['snode']['subdata']['x']['data'],netcdf2d['snode','sx'])
+  np.testing.assert_array_equal(variables['snode']['subdata']['y']['data'],netcdf2d['snode','sy'])
   
 
 def test_getData():
-  # Test 1  
-  obj={"user_sxy":False,"user_xy":False,"user_time":False,"dataOnly":False}
-  np.testing.assert_array_equal(getData(netcdf2d,{**obj,"inode":[0,1]},"x")['data'],netcdf2d['node','x',[0,1]])
-  np.testing.assert_array_equal(getData(netcdf2d,{**obj,"itime":[0]},"u",["ntime","nnode"])['data'],netcdf2d['s','u',0])
-  np.testing.assert_array_equal(getData(netcdf2d,{**obj,"isnode":[0],"itime":[0]},"spectra",["nsnode","ntime","nfreq","ndir"])['data'],netcdf2d['spc','spectra',0,0])
+  # Test 1
+  np.testing.assert_array_equal(getData(netcdf2d,getParameters(netcdf2d,{"inode":[0,1],"variable":"x"}),"x")['data'],netcdf2d['node','x',[0,1]])
+  np.testing.assert_array_equal(getData(netcdf2d,getParameters(netcdf2d,{"itime":[0],"variable":"u"}),"u",["ntime","nnode"])['data'],netcdf2d['s','u',0])
+  np.testing.assert_array_equal(getData(netcdf2d,getParameters(netcdf2d,{"isnode":[0],"itime":[0],"variable":"spectra"}),"spectra",["nsnode","ntime","nfreq","ndir"])['data'],netcdf2d['spc','spectra',0,0])
 
 if __name__ == "__main__":
   test_cleanObject()
