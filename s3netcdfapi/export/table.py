@@ -21,11 +21,10 @@ def to_table(obj,data,return_xy_header=False):
         headers=getMeta(_dimData,"header")
         types=getMeta(_dimData,"type")
         df=df.from_records(csv.reader(f),columns=headers)
-        for i,id in enumerate(headers):
-          if id!="Datetime":df[id]=df[id].astype(types[i])
+        for header,type in zip(headers,types):
+          if header!="Datetime":df[header]=df[header].astype(type)
       df[_header]=_data.flatten()
     xyHeaders={**xyHeaders,**getMeta(_dimData,'header',variable,True)}
-    
   
   if not return_xy_header:return df
   return df,xyHeaders    
@@ -38,59 +37,77 @@ def dimData2Table(data,dimData):
   maxLength=0
   dimIndexValue=[]
 
-  for _data in dimData:
-    if isinstance(_data,list):
-      _d0=_data[0]['data']
-      _d1=_data[1]['data']
-      values=np.array(["{},{}".format(_x,_y)for _x,_y in zip(_d0,_d1)])
+  for dim in dimData:
+    _dimData=dimData[dim]
+    _data=_dimData['data']
+    if _data is None:
+      values=combineValues(_dimData['subdata'])
     else:
-      values=_data['data']
-
+      values=_data
       
-    values=values.astype('str')
-    _max=max([len(x) for x in values])
-    values=values.astype('|S{}'.format(_max))
-    maxLength+=_max
+    values=values.astype('S')
+    maxLength+=values.dtype.itemsize
     dimIndexValue.append(values)
   
   maxLength+=len(getMeta(dimData,"header"))
   a=np.chararray((np.prod(shape)), itemsize=maxLength).reshape(shape)
   a[:]=""
-  
   if len(shape)!=len(dimIndexValue):raise Exception("Shape of dimension index values does not match the data")
   for i,(ishape,indexValue) in enumerate(zip(shape,dimIndexValue)):
-    if ishape!=len(indexValue):raise Exception("Error here {},{}".format(ishape,indexValue))    
+    if ishape!=len(indexValue):raise Exception("Error here {},{},{}".format(i,ishape,len(indexValue)))    
     
     t=[slice(None)for j in range(i)]
     for k in range(ishape):
         _t=tuple(list(t)+[k])
         if isinstance(a[_t],str):a[_t]=a[_t].encode()+indexValue[k]+b","
         else:a[_t]=a[_t]+indexValue[k]+b","
-        
 
   a = np.char.strip(a.astype('<U{}'.format(maxLength)), ',')
   return a.flatten()
 
 
+def combineValues(subdata):
+  """
+  """
+ 
+  maxLength=len(subdata.keys())*15+len(subdata.keys())
+  nvalue=len(subdata[list(subdata.keys())[0]]['data'])
+  
+  c=np.chararray(nvalue, itemsize=maxLength)
+  c[:]=""
+  for subdim in subdata:
+    _data=subdata[subdim]['data']
+    c=c+_data.astype("S")+b","
+
+  c=np.char.strip(c.astype('U'), ',')
+  return c
+
+
 def getMeta(dimData=None,type="header",data=None,obj=None):
   """
   """
-  array=[]
+  values=[]
   names=[]
   if data is not None:
     names.append(data['name'])
-    array.append(_getMeta(data['meta'],type))
+    values.append(_getMeta(data['meta'],type))
   
   if dimData is not None:  
-    for _data in dimData:
-      if not isinstance(_data,list):_data=[_data]
-      for _d in _data:
-        names.append(_d['name'])
-        array.append(_getMeta(_d['meta'],type))
+    for dname in dimData:
+      _data=dimData[dname]
+      if _data['data'] is None:
+        for _dname in _data['subdata']:
+          subdata= _data['subdata'][_dname]
+          names.append(_dname)
+          values.append(_getMeta(subdata['meta'],type))
+      else:
+        names.append(dname)
+        values.append(_getMeta(_data['meta'],type))
       
-  if obj is None:return array
+      
+  if obj is None:return values
   obj={}
-  for name,value in zip(names,array):
+  for name,value in zip(names,values):
     obj[name]=value
   return obj
   

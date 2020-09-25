@@ -1,8 +1,11 @@
-from s3netcdf import NetCDF2D
-from s3netcdfapi.parameters import getParameters,getGroups,setGroups,parseParameters,checkSpatial,checkTemporal,checkExport
-import copy
 import pytest
 import numpy as np
+import copy
+from s3netcdf import NetCDF2D
+from s3netcdfapi.parameters import getParameters,getGroups,setGroups,parseParameters,checkSpatial,checkTemporal,checkExport
+
+
+
 
 input={
   "name":"input1",
@@ -33,8 +36,6 @@ default={
   'end':{"default":None,"type":str},
   'step':{"default":1,"type":int},
   'stepUnit':{"default":'h',"type":str},
-
-  
 }
 
 netcdf2d=NetCDF2D(input)
@@ -132,7 +133,8 @@ def test_checkTemporal():
   obj1=copy.deepcopy(default)
   parameters1={'itime':0,'start':'2000-01-01'}
   r1=checkTemporal(netcdf2d,parseParameters(obj1,parameters1))
-  assert r1=={'export': 'json', 'dataOnly': False, 'variable': None, 'inode': None, 'longitude': None, 'latitude': None, 'x': None, 'y': None, 'isnode': None, 'slongitude': None, 'slatitude': None, 'sx': None, 'sy': None, 'itime': [0], 'start': None, 'end': None, 'step': None, 'stepUnit': 'h', 'user_time': False}
+  assert r1['itime']==[0]
+  assert r1['start']==None
 
   # Test 2
   obj2=copy.deepcopy(default)
@@ -143,35 +145,16 @@ def test_checkTemporal():
 
 
 def test_checkExport():
-
   # Test 1
   obj1=copy.deepcopy(default)
-  # parameters1={'mesh':True,'export':'csv'}
-  # with pytest.raises(Exception):assert checkExport(netcdf2d,parseParameters(obj1,parameters1))
-  
-  # Test 2
-  # obj2=copy.deepcopy(default)
-  # parameters2={'mesh':True,'export':'geojson','variable':'u'}
-  # with pytest.raises(Exception):assert checkExport(netcdf2d,parseParameters(obj2,parameters2))  
-  
-  # Test 3
-  obj3=copy.deepcopy(default)
-  parameters3={'export':'csv','variable':'u,x'}
-  with pytest.raises(Exception):assert checkExport(netcdf2d,parseParameters(obj3,parameters3))  
+  parameters1={'export':'csv','variable':'u,x'}
+  with pytest.raises(Exception):assert checkExport(netcdf2d,parseParameters(obj1,parameters1))  
 
 def test_getParameters():
-
   # Test 1
   parameters={'variable':'u','longitude':[0.1,0.1],'latitude':[0.2,0.2],'itime':0}
   obj=getParameters(netcdf2d,parameters)
   np.testing.assert_array_equal(obj['xyIndex'],[0,0])
-  
-  parameters={"export":"geojson",'variable':'mesh'}
-  obj=getParameters(netcdf2d,parameters)
-  # print(obj)
-  # np.testing.assert_array_equal(obj['xyIndex'],[0,0])
-  
-
 
 if __name__ == "__main__":
   test_getGroups()

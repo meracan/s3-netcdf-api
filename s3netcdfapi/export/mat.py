@@ -6,5 +6,8 @@ def mat(data):
   savemat(_, {})
   mat = loadmat(_)
   for var in data:
-    mat[var] = data[var]
+    # mat[var] = data[var]
+    mat['spectra']=data['spectra']
+    mat['freq']=data['freq'] 
+    mat['dir']=data['dir'] 
   return mat

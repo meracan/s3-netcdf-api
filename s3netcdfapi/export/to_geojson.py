@@ -7,7 +7,6 @@ def to_geojson(obj,data):
   if obj['isTable']:
     df,xyHeaders=to_table(obj,data,True)
     for _, row in df.iterrows():
-      
       feature = {'type':'Feature','properties':json.loads(row.to_json()), 'geometry':
         {'type':'Point','coordinates':[row[xyHeaders['x']],row[xyHeaders['y']]]}}
       geojson['features'].append(feature)
@@ -24,6 +23,7 @@ def to_geojson(obj,data):
         {'type':'Polygon','coordinates':list(coordinates)}}
       geojson['features'].append(feature)
     
-  
-  with open(obj['output']+".geojson", 'w') as outfile:
-    json.dump(geojson,outfile,indent=2) 
+  filepath=obj['filepath']+".geojson"
+  with open(filepath, 'w') as outfile:
+    json.dump(geojson,outfile,indent=2)
+  return filepath

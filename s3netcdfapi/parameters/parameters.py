@@ -6,9 +6,15 @@ from .checkSpectral import checkSpectral
 import numpy as np
 
 def getParameters(netcdf2d,_parameters):
+  
+  template={
+    "mesh":{"x":"lat","y":"lng"},
+    "points":{"x":"sx","y":"sx"}
+  }
+  
     
   default={
-    'output':{"default":"test/output","type":str},
+    'output':{"default":"output","type":str},
     'export':{"default":"json","type":str},
     "dataOnly":{"default":False,"type":bool},
     # 'mesh':{"default":False,"type":bool},
@@ -37,22 +43,8 @@ def getParameters(netcdf2d,_parameters):
     'inter.spectral':{"default":'closest',"type":str},
     
     'sep':{"default":',',"type":str},
-    'pointer':{"default":{
-      "meshx":{'variable':'x'},
-      "meshy":{'variable':'y'},
-      "elem":{'variable':'elem'},
-      "time":{'variable':'time'},
-      "sx":{'variable':'sx'},
-      "sy":{'variable':'sy'},
-      "dimensions":{"itime":'itime',"inode":'inode',"isnode":'isnode'},
-      },"type":(object)},
-          
-    
-    # 'meshx':{"default":None,"type":(float,list)},
-    # 'meshy':{"default":None,"type":(float,list)},
-    # 'elem':{"default":None,"type":(float,list)},
-    
   }
+  
   obj=parseParameters(default,_parameters)
   obj=setGroups(netcdf2d,obj)
   obj=checkExport(netcdf2d,obj)
@@ -72,6 +64,7 @@ def setGroups(netcdf2d,obj):
     if not 'x' in obj['variable']:obj['variable'].append('x')
     if not 'y' in obj['variable']:obj['variable'].append('y')
     if not 'elem' in obj['variable']:obj['variable'].append('elem')
+    if not 'time' in obj['variable']:obj['variable'].append('time')
     obj['variable'].remove('mesh')
     obj['inode']=None
     obj['x']=None

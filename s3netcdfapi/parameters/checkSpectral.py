@@ -31,6 +31,8 @@ def checkSpectral(netcdf2d,obj):
     if obj['sx'] is not None and not isinstance(obj['sx'],list):obj['sx']=[obj['sx']] # Test1
     if obj['sy'] is not None and not isinstance(obj['sy'],list):obj['sy']=[obj['sy']]
     if len(obj['sx']) !=len(obj['sy']):raise Exception("sx/slongitude must be equal to sy/slatitude")
+    obj['sx']=np.array(obj['sx'])
+    obj['sy']=np.array(obj['sy'])
     obj['sxy']=np.column_stack((obj['sx'],obj['sy']))
     if obj['inter.spectral']=='closest':obj=closest(netcdf2d,obj)
     else:raise Exception("closest is exepted ({})".format(obj['interpolation']['spectral']))

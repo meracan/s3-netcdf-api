@@ -38,6 +38,8 @@ def checkSpatial(netcdf2d,obj):
     if obj['x'] is not None and not isinstance(obj['x'],list):obj['x']=[obj['x']] # Test1
     if obj['y'] is not None and not isinstance(obj['y'],list):obj['y']=[obj['y']]
     if len(obj['x']) !=len(obj['y']):raise Exception("x/longitude must be equal to y/latitude")
+    obj['x']=np.array(obj['x'])
+    obj['y']=np.array(obj['y'])
     obj['xy']=np.column_stack((obj['x'],obj['y']))
     if obj['inter.spatial']=='closest':obj=closest(netcdf2d,obj)
     elif obj['inter.spatial']=='linear':obj=linear(netcdf2d,obj)

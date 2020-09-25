@@ -1,12 +1,19 @@
 import os
+import sys
 import json
 import boto3
+import uuid
+from collections import OrderedDict 
 
 from s3netcdf import NetCDF2D
-from parameters import getParameters
-from response import response
-from credentials import getCredentials
-import queryData
+from .s3api import S3API
+from .parameters import getParameters
+from .response import response,responseSignedURL
+from .credentials import getCredentials
+from .data import get
+from .export import export
+sys.path.append(os.path.join(os.path.dirname(__file__)))
+isDebug=os.environ.get('AWS_DEBUG',"True")
 
 def handler(event, context):
   try:
@@ -27,13 +34,24 @@ def checkNetCDFExist(credentials,id,prefix,bucket):
   key="{0}{1}/{1}.nca".format(_prefix,id)
   s3.head_object(Bucket=bucket, Key=key)# Check if object exist, if not returns Exception
 
-def query(parameters,credentials):
-  id = parameters.pop("id",os.environ["AWS_DEFAULTMODEL"])
-  prefix = parameters.pop("prefix",os.environ.get("AWS_PREFIX",None))
-  bucket=parameters.pop("bucket",os.environ['AWS_BUCKETNAME'])
-  checkNetCDFExist(credentials,id,prefix,bucket)
+def query(parameters,credentials={}):
+  id = parameters.pop("id",os.environ.get("AWS_DEFAULTMODEL",None))
+  if id is None:raise Exception("Api needs a model id")
+  if isDebug=="True":
+    bucket=os.environ.get('AWS_BUCKETNAME',"uvic-bcwave")
+    prefix = os.environ.get("AWS_PREFIX",None)
+    cache=os.environ.get('AWS_CACHE',r"../s3/tmp")
+    netcdf2d=NetCDF2D({"name":id,"s3prefix":prefix,"bucket":bucket,"localOnly":True,"cacheLocation":r"../s3","credentials":credentials})
+  else:
+    bucket=os.environ.get('AWS_BUCKETNAME',None)
+    prefix = os.environ.get("AWS_PREFIX",None)
+    cache=os.environ.get('AWS_CACHE','/tmp')
+    checkNetCDFExist(credentials,id,prefix,bucket)
+    netcdf2d=NetCDF2D({"name":id,"prefix":prefix,"bucket":bucket,"localOnly":False,"cacheLocation":cache})
   
-  netcdf2d=NetCDF2D({"name":id,"prefix":prefix,"bucket":bucket,"localOnly":False,"cacheLocation":"/tmp"})
+  if not os.path.exists(cache):os.makedirs(cache)
+  
+  s3=S3API({"name":id,"s3prefix":"tmp","bucket":bucket,"cacheLocation":cache,"credentials":credentials})
   
   # Export Metadata Only
   variable=parameters.get('variable',None)
@@ -41,58 +59,23 @@ def query(parameters,credentials):
     meta=netcdf2d.meta()
     return response("application/json",False,json.dumps(meta)) 
   
+  # TODO:Get cache file
+  # dict1 = OrderedDict(sorted(parameters.items())) 
+  # print(dict1)
+  
   # Check parameters
   obj=getParameters(netcdf2d,parameters)
   
   # Get data
-  data=
+  data=get(netcdf2d,obj)
   
-  # Export Data
-  return response(**export(obj,data))
-
-
-
+  # Export data to file
+  obj['output']=str(uuid.uuid4())
+  obj['filepath']=os.path.join(cache,obj['output'])
+  filepath=export(obj,data)
   
-  # data={}
-  # if var=="mesh" or format=='slf':
-  #   # Get mesh data
-  #   # TODO: these group and variable name are hardcoded...might include the key words in the nca metadata
-  #   data['elem']=netcdf2d.query({"group":"elem","variable":"elem"})
-  #   data['x']=netcdf2d.query({"group":"nodes","variable":"lon"})
-  #   data['y']=netcdf2d.query({"group":"nodes","variable":"lat"})
-
-
-  # if var!="mesh":
-  #   # Get data using name of variable
-  #   if format in ["geojson", "csv"]:
-  #     data['parameter'] = var
-
-  #     if var == "spectra":
-  #       data['lons'] = netcdf2d.query({"group": "stations", "variable": "slon"})
-  #       data['lats'] = netcdf2d.query({"group": "stations", "variable": "slat"})
-  #       data['freq'] = netcdf2d.query({"group": "freq", "variable": "freq"})
-  #       data['dir'] = netcdf2d.query({"group": "dir", "variable": "dir"})
-  #       data['station'] = parameters.get('station', None)
-  #       data['freq_indices'] = parameters.get('freq', None)
-  #       data['dir_indices'] = parameters.get('dir', None)
-  #     else:
-  #       data['lons'] = netcdf2d.query({"group": "nodes", "variable": "lon"})
-  #       data['lats'] = netcdf2d.query({"group": "nodes", "variable": "lat"})
-  #       data['bath'] = netcdf2d.query({"group": "nodes", "variable": "bed"})
-
-  #     data['n_indices'] = parameters.get('node', None)
-  #     data['t_indices'] = parameters.get('time', None)
-  #     data['times'] = netcdf2d.query({"group": "time", "variable": "time"})
-
-  #   if format == "jsontest2":
-  #     nodes = parameters.get('node', None)
-  #     data['nodes'] = nodes
-
-
-  #   data[var]=netcdf2d.query(parameters)
-
-    
-  # return save(format,data)
-
-
-
+  # Upload to S3
+  s3.upload(filepath)
+  url=s3.generate_presigned_url(filepath)
+  
+  return responseSignedURL(url)

@@ -7,15 +7,15 @@ from .netcdf import to_netcdf
 from .slf import to_slf
 
 
-# from binary import binary
+def export(obj,data):
+  format = obj.pop('export',"json")
+  if format=="json":return to_json(obj,data)
+  if format=="geojson":return to_geojson(obj,data)
+  if format=="csv":return to_csv(obj,data)
+#   if format=="bin":return to_binary(obj,data)
+  if format=="netcdf":return  to_netcdf(obj,data)
+#   if format=="mat":return  to_csv(obj,data)
+#   if format=="tri":return  to_csv(obj,data)
+#   if format=="slf":return  to_slf(obj,data)
+#   if format=="shp":return  to_csv(obj,data)
 
-# from geojson import geojson
-# from json import json
-# from jsontest import jsontest
-# from mat import mat
-# from netcdf import netcdf
-# from shapefile import shapefile
-# from slf import slf
-# from tri import tri
-# from table import table
-# from _export import _export as export
