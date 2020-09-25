@@ -20,6 +20,7 @@ def checkTemporal(netcdf2d,obj,dname):
     obj['user_time']=True
     vnames=netcdf2d.getVariablesByDimension(dname)
     time=next(x for x in vnames if x in obj['pointers']['temporal']['time'])
+    
     dt=obj['_time']=netcdf2d.query({"variable":time})
     mindt=np.min(dt)
     maxdt=np.max(dt)
@@ -34,8 +35,8 @@ def checkTemporal(netcdf2d,obj,dname):
     if obj['start']<mindt:raise Exception("{0} below limit of {1}".format(obj['start'],np.min(dt)))
     if obj['end']>maxdt:raise Exception("{0} below limit of {1}".format(obj['end'],np.max(dt)))
     
-    obj['time']= np.arange(obj['start'], obj['end'],obj['step'], dtype='datetime64[h]')
-    
+    obj['time']= np.arange(obj['start'], obj['end']+obj['step'],obj['step'], dtype='datetime64[s]')
+
     # Get minimum index
     _s=np.argsort(np.abs(dt - mindt)) 
     s=np.minimum(_s[0],_s[1]) 
@@ -44,6 +45,6 @@ def checkTemporal(netcdf2d,obj,dname):
     _e=np.argsort(np.abs(dt - maxdt))
     e=np.maximum(_e[0],_e[1]) 
     
-    obj[idname]=np.arange(s,e,dtype="int")
+    obj[idname]=np.arange(s,e+1,dtype="int")
   
   return obj

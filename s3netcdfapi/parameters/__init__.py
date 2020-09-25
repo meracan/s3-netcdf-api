@@ -3,4 +3,4 @@ from .checkSpatial import checkSpatial
 from .checkTemporal import checkTemporal
 # from .checkSpectral import checkSpectral
 from .checkExport import checkExport
-from .newCheck import check
+from .check import check

@@ -58,6 +58,7 @@ def timeSeriesLinear(_datetimes,datetimes,_data=None,bounds_error=True):
   inter.timeSeries(_datetime,datetime,data)
   
   """
+
   if bounds_error:
     _checkBounds(_datetimes,datetimes)
   
@@ -69,7 +70,7 @@ def timeSeriesLinear(_datetimes,datetimes,_data=None,bounds_error=True):
   
   t1=_datetimes[i1] # Front datetime
   t0=_datetimes[i0] # Back datetime
-  
+    
   w1 = (datetimes-t0) / (t1-t0) # Weight of front
   w0 = 1.0-w1  # Weight of back
   
@@ -79,6 +80,7 @@ def timeSeriesLinear(_datetimes,datetimes,_data=None,bounds_error=True):
   for _ in range(_data.ndim-w1.ndim):
     w1=np.expand_dims(w1, axis=1)
     w0=np.expand_dims(w0, axis=1)
+
 
   data = _data[i1]*w1+_data[i0]*w0 # Interpolate
   return data
@@ -96,6 +98,7 @@ def barycentric(elem,x,y,p,_data=None):
   p:interpolate points, shape=(npoints,nc)
   _data:reference data, shape=(_npoints)
   """
+  
   nelem=len(elem)
   npoint=len(p)
   _p=np.stack((x[elem],y[elem])) # shape=(2,nelem,3)

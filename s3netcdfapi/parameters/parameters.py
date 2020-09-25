@@ -2,11 +2,9 @@ import os
 import uuid
 import numpy as np
 from .checkExport import checkExport
-from .newCheck import check
+from .check import check
 
-
-
-def getParameters(netcdf2d,_parameters):
+def getParameters(netcdf2d,_parameters,cache=r"../s3/tmp"):
 
   pointers={"pointers":{
     "mesh":{"dimensions":["nnode"],"x":["x","lng",'longitude','lon'],"y":["y","lat","latitude"],"node":["node"]},
@@ -16,10 +14,6 @@ def getParameters(netcdf2d,_parameters):
   
     
   default={
-    'cache':{"default":r"../s3/tmp","type":str},
-    'export':{"default":"json","type":str},
-    "dataOnly":{"default":False,"type":bool},
-    # 'mesh':{"default":False,"type":bool},
     'variable':{"default":None,"type":(str,list)},
     
     'inode':{"default":None,"type":(int,list,slice)},
@@ -40,11 +34,15 @@ def getParameters(netcdf2d,_parameters):
     'inter.temporal':{"default":'closest',"type":str},
     'inter.xy':{"default":'closest',"type":str},
     
+    'export':{"default":"json","type":str},
     'sep':{"default":',',"type":str},
     
   }
   obj=parseParameters(default,_parameters)
-  obj['filepath']=os.path.join(obj['cache'],str(uuid.uuid4()))
+  
+  obj['filepath']=os.path.join(cache,str(uuid.uuid4()))
+  obj["dataOnly"]=False
+  
   obj={**pointers,**obj}
   obj=setGroups(netcdf2d,obj)
   obj=checkExport(netcdf2d,obj)
@@ -53,6 +51,7 @@ def getParameters(netcdf2d,_parameters):
 
 
 def setGroups(netcdf2d,obj):
+  
   if obj['variable'] is None: obj['variable']=[]
   
   if not isinstance(obj['variable'], list):obj['variable']=[obj['variable']]
@@ -70,9 +69,6 @@ def setGroups(netcdf2d,obj):
     obj['latitude']=None
     obj['longitude']=None
     obj["dataOnly"]=True
-    
-  
-    
   
   obj['groups']=groups=getGroups(netcdf2d,obj)
   obj['ngroups']=ngroups=len(groups)
@@ -117,7 +113,7 @@ def parseParameters(obj,parameters):
 
 def parseString(parameter,t):
   try:
-    if ":" in parameter: # Test 1
+    if ":" in parameter and not "-" in parameter: # Test 1
       start,end=parameter.split(":")
       if start=="":start=None
       else: start=int(start)
