@@ -100,15 +100,23 @@ class S3NetCDFAPI(NetCDF2D):
     yname=self.getVariableByDimension('nnode',self.pointers['mesh'],'y')
     x=self.query({'variable':xname})
     y=self.query({'variable':yname})
-    parameters[x]['extent']=[np.min(x),np.max(x)]
-    parameters[y]['extent']=[np.min(y),np.max(y)]
+    parameters[xname]['extent']=[float(np.min(x)),float(np.max(x))]
+    parameters[yname]['extent']=[float(np.min(y)),float(np.max(y))]
     
     timename=self.getVariableByDimension('ntime',self.pointers['temporal'],'time')
     time=self.query({'variable':timename})
-    parameters['start']['minDate']=np.min(time)
-    parameters['start']['maxDate']=np.max(time)
-    parameters['end']['minDate']=np.min(time)
-    parameters['end']['maxDate']=np.max(time)     
+    parameters['start']['minDate']=np.datetime_as_string(np.min(time), unit='s')
+    parameters['start']['maxDate']=np.datetime_as_string(np.max(time), unit='s')
+    parameters['end']['minDate']=np.datetime_as_string(np.min(time), unit='s')
+    parameters['end']['maxDate']=np.datetime_as_string(np.max(time), unit='s') 
+    
+    for v in parameters:
+      if 'type' in parameters[v]:
+        if isinstance(parameters[v]['type'],tuple):
+           parameters[v]['type']=",".join([a.__name__ for a in list(parameters[v]['type'])])
+        else:
+          parameters[v]['type']=parameters[v]['type'].__name__
+    
     return parameters
   
   def getParameters(self,parameters):
@@ -170,8 +178,12 @@ class S3NetCDFAPI(NetCDF2D):
     # Export Metadata Only
     variable=parameters.get('variable',None)
     if variable is None:
-      meta=self.exportMeta()
-      return response("application/json",False,json.dumps(meta)) 
+      meta={
+        "comments":"",
+        "parameters":self.getDefaultParametersExtra(),
+        
+      }
+      return response("application/json",json.dumps(meta)) 
     
     # Check parameters
     obj=self.prepareInput(parameters)
