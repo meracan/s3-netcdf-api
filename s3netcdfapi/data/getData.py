@@ -1,18 +1,17 @@
 import numpy as np
 import collections
 from .interpolation import timeSeriesClosest,timeSeriesLinear,barycentric
-
 from .utils import cleanObject,swapAxes,swapAxe
 
 
-def get(netcdf2d,obj):
+def getData(netcdf2d,obj):
   data={}
   for variable in obj['variable']:
-    data[variable]=getData(netcdf2d,obj,variable)
+    data[variable]=_getData(netcdf2d,obj,variable)
   return data
 
 
-def getData(netcdf2d,obj,variable,_odimensions=None):
+def _getData(netcdf2d,obj,variable,_odimensions=None):
   """
   
   Get data and interpolate data from S3-NetCDF
@@ -82,8 +81,8 @@ def getDimData(netcdf2d,obj,dnames):
     if 'mesh' in types or "xy" in types:
       if 'mesh' in types:pointer=obj['pointers']["mesh"]
       else:pointer=obj['pointers']["xy"]
-      x=getVariableByDimension(netcdf2d,dname,pointer,"x")
-      y=getVariableByDimension(netcdf2d,dname,pointer,"y")
+      x=netcdf2d.getVariableByDimension(dname,pointer,"x")
+      y=netcdf2d.getVariableByDimension(dname,pointer,"y")
       # if 'user_xy' in obj and not obj['user_xy']:
       if not 'x' in obj or obj['x'] is None: 
         obj['x']=netcdf2d.query(cleanObject({**obj,'variable':x},['i{}'.format(name)]))
@@ -100,7 +99,7 @@ def getDimData(netcdf2d,obj,dnames):
       if not nvar in obj or obj[nvar] is None: 
         if name in types:
           pointer=obj['pointers'][name]
-          nvar=getVariableByDimension(netcdf2d,dname,pointer,name)
+          nvar=netcdf2d.getVariableByDimension(dname,pointer,name)
         obj[nvar]=netcdf2d.query(cleanObject({**obj,'variable':nvar},['i{}'.format(nvar)]))
         
         
@@ -118,10 +117,10 @@ def getInversePointer(pointers):
       else:ts[dname]=[t]
   return ts
 
-def getVariableByDimension(netcdf2d,dname,pointer,pointername):
-  """
-  """
-  vnames=netcdf2d.getVariablesByDimension(dname)
-  vname=next(x for x in vnames if x in pointer[pointername])
-  return vname
+# def getVariableByDimension(netcdf2d,dname,pointer,pointername):
+#   """
+#   """
+#   vnames=netcdf2d.getVariablesByDimension(dname)
+#   vname=next(x for x in vnames if x in pointer[pointername])
+#   return vname
   

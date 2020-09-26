@@ -130,7 +130,7 @@ def main():
   input = dict(
     name="input2",
     cacheLocation=r"../s3",
-    localOnly=False,
+    localOnly=True,
     
     bucket="uvic-bcwave",
     cacheSize=10.0,
@@ -147,6 +147,7 @@ def main():
         nsnode=10,
         nfreq=33,
         ndir=36,
+        nchar=32
       ),
       groups=dict(
         elem=dict(dimensions=["nelem","npe"],variables=dict(
@@ -160,8 +161,8 @@ def main():
           lat=dict(type="f4",units="" ,standard_name="Latitude" ,long_name=""),
           bed=dict(type="f4",units="" ,standard_name="Latitude" ,long_name=""),
           )),
-        feature=dict(dimensions=["nfeature"],variables=dict(
-          name=dict(type="S10",units="" ,standard_name="Feature Name" ,long_name=""),
+        feature=dict(dimensions=["nfeature","nchar"],variables=dict(
+          name=dict(type="S2",units="" ,standard_name="Feature Name" ,long_name=""),
           )),
         snode=dict(dimensions=["nsnode"],variables=dict(
           slon=dict(type="f4",units="" ,standard_name="Longitude" ,long_name=""),
@@ -175,8 +176,10 @@ def main():
           dir=dict(type="f4",units="radian" ,standard_name="Direction" ,long_name=""),
           )),
         s=dict(dimensions=["ntime", "nnode"] ,variables=variables),
-        t=dict(dimensions=["nnode" ,"ntime"] ,variables=variables)
-       
+        t=dict(dimensions=["nnode" ,"ntime"] ,variables=variables),
+        spc=dict(dimensions=["nsnode","ntime","nfreq", "ndir"] ,variables=dict(
+          spectra={"type":"f8","units":"m2/Hz/degr","standard_name": "VaDens","long_name":"variance densities in m2/Hz/degr","exception_value":-0.9900E+02}
+        ))
       )
     )
   )
@@ -189,10 +192,11 @@ def main():
   feature=np.zeros(nsnode,dtype=np.int32)
   feature[1]=1
   feature[2]=2
-  feature[3:5]=3
-  feature[5:7]=4
-  feature[7:10]=5
-  feature[10:]=6
+  feature[3:6]=3
+  feature[6]=4
+  feature[7]=5
+  feature[8]=5
+  feature[9]=6
   sshape = netcdf2d.groups["s"].shape
   svalue = np.arange(np.prod(sshape)).reshape(sshape)
   
@@ -202,7 +206,7 @@ def main():
   netcdf2d["snode","slon"] = np.arange(nsnode)*0.1
   netcdf2d["snode","slat"] = np.arange(nsnode)*0.1
   netcdf2d["snode","feature"] = feature
-  netcdf2d["feature","name"] = ["a","b","c","d","e","f"]
+  netcdf2d["feature","name"] = ["beverly","brooks","c_dixon","c_eliz","campbell","e_dell"]
   netcdf2d["freq","freq"] = np.arange(33)/33.0
   netcdf2d["dir","dir"] = np.arange(36)/36.0
   netcdf2d["spc","spectra"] = np.arange(10*1000*33*36)/1000000.0

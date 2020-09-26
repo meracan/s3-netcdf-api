@@ -1,10 +1,8 @@
+from .getTemporal import getTemporal
+from .getSpatial import getSpatial
 
 
-from .checkTemporal import checkTemporal
-from .checkSpatial import checkSpatial
-
-
-def check(netcdf2d,obj):
+def getIndex(netcdf2d,obj):
   variables=obj['variable']
   dnames=[]
   for vname in variables:
@@ -13,11 +11,11 @@ def check(netcdf2d,obj):
 
   for dname in dnames:
     if dname in obj['pointers']['temporal']['dimensions']:
-      obj=checkTemporal(netcdf2d,obj,dname)
+      obj=getTemporal(netcdf2d,obj,dname)
     elif dname in obj['pointers']['mesh']['dimensions']:
-      obj=checkSpatial(netcdf2d,obj,dname,'mesh')
+      obj=getSpatial(netcdf2d,obj,dname,'mesh')
     elif dname in obj['pointers']['xy']['dimensions']:
-      obj=checkSpatial(netcdf2d,obj,dname,"xy")
+      obj=getSpatial(netcdf2d,obj,dname,"xy")
     else:continue
       
   return obj

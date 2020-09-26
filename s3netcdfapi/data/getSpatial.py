@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib.tri import Triangulation
 from scipy.spatial import cKDTree
-from .utils import getIdx
+
 # x      = User coordinate-x
 # y      = User coordinate-y
 # _meshx = All  coordinate-x from mesh
@@ -11,14 +11,7 @@ from .utils import getIdx
 # meshy  = Selected coordinate-y from mesh
 # elem   = Selected elements from mesh
 
-def getMesh(netcdf2d,obj):
-  mesh=netcdf2d.getMeshMeta()
-  if not '_meshx' in obj or obj['_meshx'] is None:obj['_meshx']=netcdf2d.query({"variable":mesh['x']})
-  if not '_meshy' in obj or obj['_meshy'] is None:obj['_meshy']=netcdf2d.query({"variable":mesh['y']})
-  if not '_elem' in obj or obj['_elem'] is None: obj['_elem']=netcdf2d.query({"variable":mesh['elem']})
-  return obj
-
-def checkSpatial(netcdf2d,obj,dname,type='mesh'):
+def getSpatial(netcdf2d,obj,dname,type='mesh'):
   """
   """
   if obj['longitude'] is not None:obj['x']=obj['longitude'] # Test1
@@ -52,6 +45,14 @@ def checkSpatial(netcdf2d,obj,dname,type='mesh'):
   return obj
 
 
+def getMesh(netcdf2d,obj):
+  mesh=netcdf2d.getMeshMeta()
+  if not '_meshx' in obj or obj['_meshx'] is None:obj['_meshx']=netcdf2d.query({"variable":mesh['x']})
+  if not '_meshy' in obj or obj['_meshy'] is None:obj['_meshy']=netcdf2d.query({"variable":mesh['y']})
+  if not '_elem' in obj or obj['_elem'] is None: obj['_elem']=netcdf2d.query({"variable":mesh['elem']})
+  return obj
+
+
 def linear(netcdf2d,obj,idname):
   """
   """
@@ -79,6 +80,7 @@ def closest(netcdf2d,obj,idname):
   obj[idname]=inode
   obj['nodeIndex']=nodeIndex
   return obj
+
 
 def closestXY(netcdf2d,obj,dname,idname):
   """

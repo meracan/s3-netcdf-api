@@ -1,7 +1,6 @@
 import pytest
 import numpy as np
 from s3netcdf import NetCDF2D
-from s3netcdfapi.parameters import getParameters
 import s3netcdfapi.data.interpolation as inter
 
 

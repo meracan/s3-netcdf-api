@@ -1,11 +1,9 @@
 import numpy as np
-from .utils import getIdx
-
-
 # _datetime      = All datetime
 # datetime      = Selected datetime
 
-def checkTemporal(netcdf2d,obj,dname):
+
+def getTemporal(netcdf2d,obj,dname):
   """ Check Temporal parameters
   """
   idname="i"+dname[1:]

@@ -11,12 +11,42 @@ pip install -e ../s3-netcdf-api
 pip install -e ../binary-py
 ```
 
+## Parameters
+```json
+{
+    "variable":{"default":None,"type":(str,list),"values":[]},
+    
+    "inode":{"default":None,"type":(int,list,slice),"minmax":[],"comment":"index of the model node"},
+    "isnode":{"default":None,"type":(int,list,slice),"minmax":[],"comment":"index of the model node"},
+    "itime":{"default":None,"type":(int,list,slice),"minmax":[]},
+    
+    
+    "longitude":{"default":None,"type":(float,list),"extent":[]},
+    "latitude":{"default":None,"type":(float,list)},"extent":[],
+    "x":{"default":None,"type":(float,list),"extent":[]},
+    "y":{"default":None,"type":(float,list),"extent":[]},
+    
+    
+    "start":{"default":None,"type":"str","extent":""},
+    "end":{"default":None,"type":"str","extent":""},
+    "step":{"default":1,"type":"int"},
+    "stepUnit":{"default":"h","type":"str"},
+    
+    "inter.mesh":{"default":"closest","type":"str","values":["closest","linear"]},
+    "inter.temporal":{"default":"closest","type":"str","values":["closest","linear"]},
+    "inter.xy":{"default":"closest","type":str,"values":["closest"]},
+    
+    "export":{"default":"json","type":str,"values":[]},
+    "sep":{"default":",","type":str,"values":[]},
+}
+
+```
+
 ## AWS Setup
 ```
 git clone fff
 ```
 
-#### TODO
-- Complete save.py
-- Some of the export format needs the mesh (e.g slf,geojson)
-- For mesh: the group and variable name are hardcoded...might include the key words in the nca metadata
+##
+
+
