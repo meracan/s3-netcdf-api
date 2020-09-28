@@ -30,14 +30,17 @@ class S3NetCDFAPI(NetCDF2D):
   
   
   @staticmethod
-  def create(parameters,credentials):
+  def init(parameters,credentials):
     id = parameters.pop("id",os.environ.get("AWS_DEFAULTMODEL",None))
     if id is None:raise Exception("Api needs a model id")
     isDebug=os.environ.get('AWS_DEBUG',"True")
     if isDebug=="True":
       bucket=os.environ.get('AWS_BUCKETNAME',"uvic-bcwave")
+      bucket=parameters.get('bucket',bucket)
       prefix = os.environ.get("AWS_PREFIX",None)
-      netcdf2d=S3NetCDFAPI({"name":id,"s3prefix":prefix,"bucket":bucket,"localOnly":True,"cacheLocation":r"../s3","apiCacheLocation":r"../s3/tmp","credentials":credentials})
+      localOnly = parameters.get("localOnly",True)
+      print(prefix)
+      netcdf2d=S3NetCDFAPI({"name":id,"s3prefix":prefix,"bucket":bucket,"verbose":True,"localOnly":localOnly,"cacheLocation":r"../s3","apiCacheLocation":r"../s3/tmp","credentials":credentials})
     else:
       bucket=os.environ.get('AWS_BUCKETNAME',None)
       prefix = os.environ.get("AWS_PREFIX",None)
@@ -80,9 +83,9 @@ class S3NetCDFAPI(NetCDF2D):
     parameters["end"]={"default":None,"type":str,"comment":"Endate (yyyy-mm-ddThh:mm:ss)"}
     parameters["step"]= {"default":1,"type":int,"comment":"Timestep(integer)"}
     parameters["stepUnit"]={"default":"h","type":str,"comment":"Timestep unit(s,h,d,w)"}
-    parameters["inter.mesh"]={"default":"closest","type":str,"values":["closest","linear"],"comment":"Timestep unit(s,h,d,w)"}
-    parameters["inter.temporal"]={"default":"closest","type":str,"values":["closest","linear"],"comment":"Type of spatial interpolation"}
-    parameters["inter.xy"]={"default":"closest","type":str,"values":["closest"],"comment":"Type of spatial interpolation"}
+    parameters["inter.mesh"]={"default":"nearest","type":str,"values":["nearest","linear"],"comment":"Timestep unit(s,h,d,w)"}
+    parameters["inter.temporal"]={"default":"nearest","type":str,"values":["nearest","linear"],"comment":"Type of spatial interpolation"}
+    parameters["inter.xy"]={"default":"nearest","type":str,"values":["nearest"],"comment":"Type of spatial interpolation"}
     parameters["export"]={"default":"json","type":str}
     parameters["sep"]={"default":",","type":str}
   

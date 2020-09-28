@@ -1,6 +1,6 @@
 import numpy as np
 import collections
-from .interpolation import timeSeriesClosest,timeSeriesLinear,barycentric
+from . import interpolation as inter
 from .utils import cleanObject,swapAxes,swapAxe
 
 
@@ -36,17 +36,14 @@ def _getData(netcdf2d,obj,variable,_odimensions=None):
     data,dimensions=swapAxe(data,dimensions,dim)
     # if dim=="ntime" and obj['user_time']: # Does it need to be interpolated?
     if dim in obj['pointers']['temporal']['dimensions'] and obj['user_time']: # Does it need to be interpolated?
-      if obj['inter.temporal']=="closest":data=timeSeriesClosest(obj["_time"],obj["time"],data)
-      elif obj['inter.temporal']=="linear":data=timeSeriesLinear(obj["_time"],obj["time"],data)
-      else:raise Exception("")
-    # elif dim=="nnode" and obj['user_xy']: # Does it need to be interpolated?
+      data=inter.timeSeries(obj["_time"],obj["time"],data,kind=obj['inter.temporal'])
     elif dim in obj['pointers']['mesh']['dimensions'] and obj['user_xy']: # Does it need to be interpolated?
-      if obj['inter.mesh']=="closest":data=data[obj['nodeIndex']]
-      elif obj['inter.mesh']=="linear":data=barycentric(obj["elem"],obj["meshx"],obj["meshy"],obj['xy'],data)
+      if obj['inter.mesh']=="nearest":data=data[obj['nodeIndex']]
+      elif obj['inter.mesh']=="linear":data=inter.mesh(obj["meshx"],obj["meshy"],obj["elem"],data,obj['x'],obj['y'])
       else:raise Exception("")
       
     elif dim in obj['pointers']['xy']['dimensions']  and obj['user_xy']: # Does it need to be interpolated?
-      if obj['inter.xy']=="closest":data=data[obj['xyIndex']]
+      if obj['inter.xy']=="nearest":data=data[obj['xyIndex']]
       else:raise Exception("")
   
   # Swap axes as required
@@ -89,9 +86,9 @@ def getDimData(netcdf2d,obj,dnames):
       if not 'y' in obj or obj['y'] is None:
         obj['y']=netcdf2d.query(cleanObject({**obj,'variable':y},['i{}'.format(name)]))
         
-      data[name]={"data":None,"subdata":{
-        "x":{"data":obj['x'],"meta":netcdf2d.getMetaByVariable(x)},
-        "y":{"data":obj['y'],"meta":netcdf2d.getMetaByVariable(y)}
+      data[name]={"name":name,"data":None,"subdata":{
+        "x":{"name":"x","data":obj['x'],"meta":netcdf2d.getMetaByVariable(x)},
+        "y":{"name":"y","data":obj['y'],"meta":netcdf2d.getMetaByVariable(y)}
       }}
     else:
       nvar=name
@@ -103,7 +100,7 @@ def getDimData(netcdf2d,obj,dnames):
         obj[nvar]=netcdf2d.query(cleanObject({**obj,'variable':nvar},['i{}'.format(nvar)]))
         
         
-      data[nvar]={"data":obj[nvar],"meta":netcdf2d.getMetaByVariable(nvar)}
+      data[nvar]={"name":nvar,"data":obj[nvar],"meta":netcdf2d.getMetaByVariable(nvar)}
   
   # print(data)
   return data

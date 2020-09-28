@@ -36,11 +36,11 @@ def getSpatial(netcdf2d,obj,dname,type='mesh'):
     obj['y']=np.array(obj['y'])
     obj['xy']=np.column_stack((obj['x'],obj['y']))
     if type=="mesh":
-      if obj['inter.mesh']=='closest':obj=closest(netcdf2d,obj,idname)
+      if obj['inter.mesh']=='nearest':obj=nearest(netcdf2d,obj,idname)
       elif obj['inter.mesh']=='linear':obj=linear(netcdf2d,obj,idname)
       else:raise Exception("Unknown ({}) interpolation for inter.mesh".format(obj['inter.mesh']))
     elif type=="xy":
-      if obj['inter.xy']=='closest':obj=closestXY(netcdf2d,obj,dname,idname)
+      if obj['inter.xy']=='nearest':obj=nearestXY(netcdf2d,obj,dname,idname)
       else:raise Exception("Unknown ({}) interpolation for inter.xy".format(obj['inter.xy']))
   return obj
 
@@ -57,11 +57,14 @@ def linear(netcdf2d,obj,idname):
   """
   """
   obj=getMesh(netcdf2d,obj)
-  tri = Triangulation(obj['_meshx'], obj['_meshy'], obj['_elem'].astype("int32"))
+  elem=obj['_elem'].astype("int32")
+  tri = Triangulation(obj['_meshx'], obj['_meshy'], elem)
   trifinder = tri.get_trifinder()
   ielem=trifinder.__call__(obj['x'], obj['y'])
-  idx=obj['_elem'][ielem].astype("int32")
+  uielem,elemIndex=np.unique(ielem,return_inverse=True)
+  idx=elem[uielem].astype("int32")
   inode,nodeIndex=np.unique(idx,return_inverse=True)
+
   obj['meshx']=obj['_meshx'][inode]
   obj['meshy']=obj['_meshy'][inode]
   obj['elem']=nodeIndex.reshape(idx.shape)
@@ -69,7 +72,7 @@ def linear(netcdf2d,obj,idname):
   return obj
 
 
-def closest(netcdf2d,obj,idname):
+def nearest(netcdf2d,obj,idname):
   """
   """  
   obj=getMesh(netcdf2d,obj)
@@ -82,7 +85,7 @@ def closest(netcdf2d,obj,idname):
   return obj
 
 
-def closestXY(netcdf2d,obj,dname,idname):
+def nearestXY(netcdf2d,obj,dname,idname):
   """
   """
   vnames=netcdf2d.getVariablesByDimension(dname)

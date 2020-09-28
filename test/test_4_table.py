@@ -19,9 +19,13 @@ input={
 netcdf2d=S3NetCDFAPI(input)
 
 def test__getMeta():
-  meta={"standard_name":"Name","units":"m"}
-  assert _getMeta(meta,type="header")=="Name,m"
-  assert _getMeta(meta,type="units")=="m"
+  data={
+    "name":"dummy",
+    "meta":{"standard_name":"Name","units":"m"}
+  }
+  
+  assert _getMeta(data,type="header")=="Name,m"
+  assert _getMeta(data,type="units")=="m"
  
 def test_getMeta():
   

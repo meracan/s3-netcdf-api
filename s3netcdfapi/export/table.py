@@ -10,7 +10,7 @@ def to_table(obj,data,return_xy_header=False):
   xyHeaders={}
   for vname in data:
     variable=data[vname]
-    _header=_getMeta(variable['meta'],'header')
+    _header=_getMeta(variable,'header')
     _data=variable['data']
     _dimData=variable['dimData']
     if _dimData is None:
@@ -20,9 +20,12 @@ def to_table(obj,data,return_xy_header=False):
         f=dimData2Table(_data,_dimData)
         headers=getMeta(_dimData,"header")
         types=getMeta(_dimData,"type")
+        calendars=getMeta(_dimData,"calendar")
         df=df.from_records(csv.reader(f),columns=headers)
-        for header,type in zip(headers,types):
-          if header!="Datetime":df[header]=df[header].astype(type)
+        
+        for header,type,calendar in zip(headers,types,calendars):
+          if not calendar:df[header]=df[header].astype(type)
+          
       df[_header]=_data.flatten()
     xyHeaders={**xyHeaders,**getMeta(_dimData,'header',variable,True)}
   
@@ -90,7 +93,7 @@ def getMeta(dimData=None,type="header",data=None,obj=None):
   names=[]
   if data is not None:
     names.append(data['name'])
-    values.append(_getMeta(data['meta'],type))
+    values.append(_getMeta(data,type))
   
   if dimData is not None:  
     for dname in dimData:
@@ -99,10 +102,10 @@ def getMeta(dimData=None,type="header",data=None,obj=None):
         for _dname in _data['subdata']:
           subdata= _data['subdata'][_dname]
           names.append(_dname)
-          values.append(_getMeta(subdata['meta'],type))
+          values.append(_getMeta(subdata,type))
       else:
         names.append(dname)
-        values.append(_getMeta(_data['meta'],type))
+        values.append(_getMeta(_data,type))
       
       
   if obj is None:return values
@@ -112,15 +115,19 @@ def getMeta(dimData=None,type="header",data=None,obj=None):
   return obj
   
 
-def _getMeta(meta,type="header"):
+def _getMeta(data,type="header"):
   """
   """
+  name=data['name']
+  meta=data['meta']
   
   value=""
   if type=="header":
-    value=meta['standard_name']
-    if value!="Datetime" and meta['units']!="":value="{},{}".format(value,meta['units'])
+    if "standard_name" in meta:value=meta['standard_name']
+    else:value=name
+    if not 'calendar' in meta and "units" in meta and meta['units']!="" :value="{},{}".format(value,meta['units'])
   else:
-    value=meta[type]
+    if type in meta:value=meta[type]
+    else:value=None
   
   return value

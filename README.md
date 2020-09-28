@@ -32,9 +32,9 @@ pip install -e ../binary-py
     "step":{"default":1,"type":"int"},
     "stepUnit":{"default":"h","type":"str"},
     
-    "inter.mesh":{"default":"closest","type":"str","values":["closest","linear"]},
-    "inter.temporal":{"default":"closest","type":"str","values":["closest","linear"]},
-    "inter.xy":{"default":"closest","type":str,"values":["closest"]},
+    "inter.mesh":{"default":"nearest","type":"str","values":["nearest","linear"]},
+    "inter.temporal":{"default":"nearest","type":"str","values":["nearest","linear"]},
+    "inter.xy":{"default":"nearest","type":str,"values":["nearest"]},
     
     "export":{"default":"json","type":str,"values":[]},
     "sep":{"default":",","type":str,"values":[]},

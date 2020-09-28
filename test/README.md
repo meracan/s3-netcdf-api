@@ -9,6 +9,7 @@ For developers and debugging:
 ```bash
 mkdir ../s3
 python3 test/create_data_1.py
+python3 test/create_data_1b.py
 python3 test/create_data_2.py
 python3 test/test_1_parameters.py
 python3 test/test_2_interpolation.py
