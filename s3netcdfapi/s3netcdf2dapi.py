@@ -39,14 +39,16 @@ class S3NetCDFAPI(NetCDF2D):
       bucket=parameters.get('bucket',bucket)
       prefix = os.environ.get("AWS_PREFIX",None)
       localOnly = parameters.get("localOnly",True)
-      print(prefix)
       netcdf2d=S3NetCDFAPI({"name":id,"s3prefix":prefix,"bucket":bucket,"verbose":True,"localOnly":localOnly,"cacheLocation":r"../s3","apiCacheLocation":r"../s3/tmp","credentials":credentials})
     else:
+   
       bucket=os.environ.get('AWS_BUCKETNAME',None)
       prefix = os.environ.get("AWS_PREFIX",None)
       cache=os.environ.get('AWS_CACHE','/tmp')
+      cachePath=os.path.join(cache,"tmp")
+      if not os.path.exists(cachePath):os.makedirs(cachePath)
       S3NetCDFAPI.checkNetCDFExist(credentials,id,prefix,bucket)
-      netcdf2d=S3NetCDFAPI({"name":id,"prefix":prefix,"bucket":bucket,"localOnly":False,"cacheLocation":cache,"apiCacheLocation":cache})
+      netcdf2d=S3NetCDFAPI({"name":id,"prefix":prefix,"bucket":bucket,"localOnly":False,"cacheLocation":cache,"apiCacheLocation":cache+"/tmp"})
     return netcdf2d
   
     
@@ -78,12 +80,15 @@ class S3NetCDFAPI(NetCDF2D):
     parameters['x']={"default":None,"type":(float,list),"comment":"Interpolate data by specifying the {}".format(x)}
     parameters['y']={"default":None,"type":(float,list),"comment":"Interpolate data by specifying the {}".format(y)}
     parameters['longitude']={"default":None,"type":(float,list),"comment":"Interpolate data by specifying the {}".format(x)}
-    parameters['latitude']={"default":None,"type":(float,list),"comment":"Interpolate data by specifying the {}".format(y)}    
+    parameters['latitude']={"default":None,"type":(float,list),"comment":"Interpolate data by specifying the {}".format(y)}
+    parameters[x]={"default":None,"type":(float,list),"comment":"Interpolate data by specifying the {}".format(x)}
+    parameters[y]={"default":None,"type":(float,list),"comment":"Interpolate data by specifying the {}".format(y)}    
     parameters["start"]={"default":None,"type":str,"comment":"Startdate (yyyy-mm-ddThh:mm:ss)"}
     parameters["end"]={"default":None,"type":str,"comment":"Endate (yyyy-mm-ddThh:mm:ss)"}
     parameters["step"]= {"default":1,"type":int,"comment":"Timestep(integer)"}
     parameters["stepUnit"]={"default":"h","type":str,"comment":"Timestep unit(s,h,d,w)"}
-    parameters["inter.mesh"]={"default":"nearest","type":str,"values":["nearest","linear"],"comment":"Timestep unit(s,h,d,w)"}
+    parameters["inter.mesh"]={"default":"nearest","type":str,"values":["nearest","linear"],"comment":""}
+    parameters["extra.mesh"]={"default":"none","type":str,"values":["none","nearest"],"comment":""}
     parameters["inter.temporal"]={"default":"nearest","type":str,"values":["nearest","linear"],"comment":"Type of spatial interpolation"}
     parameters["inter.xy"]={"default":"nearest","type":str,"values":["nearest"],"comment":"Type of spatial interpolation"}
     parameters["export"]={"default":"json","type":str}
@@ -103,8 +108,8 @@ class S3NetCDFAPI(NetCDF2D):
     yname=self.getVariableByDimension('nnode',self.pointers['mesh'],'y')
     x=self.query({'variable':xname})
     y=self.query({'variable':yname})
-    parameters[xname]['extent']=[float(np.min(x)),float(np.max(x))]
-    parameters[yname]['extent']=[float(np.min(y)),float(np.max(y))]
+    parameters[xname]={'extent':[float(np.min(x)),float(np.max(x))]}
+    parameters[yname]={'extent':[float(np.min(y)),float(np.max(y))]}
     
     timename=self.getVariableByDimension('ntime',self.pointers['temporal'],'time')
     time=self.query({'variable':timename})

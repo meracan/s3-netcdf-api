@@ -26,6 +26,7 @@ def _getData(netcdf2d,obj,variable,_odimensions=None):
   _dimensions=netcdf2d.getMetaByVariable(variable)['dimensions']
   if _odimensions is None:_odimensions=_dimensions
   
+  # print(cleanObject({**obj,'variable':variable},_dimensions))
   # Get data from s3-NetCDF
   _obj=cleanObject({**obj,'variable':variable},_dimensions)
   data,dimensions=netcdf2d.query(_obj,return_dimensions=True)
@@ -37,12 +38,18 @@ def _getData(netcdf2d,obj,variable,_odimensions=None):
     # if dim=="ntime" and obj['user_time']: # Does it need to be interpolated?
     if dim in obj['pointers']['temporal']['dimensions'] and obj['user_time']: # Does it need to be interpolated?
       data=inter.timeSeries(obj["_time"],obj["time"],data,kind=obj['inter.temporal'])
-    elif dim in obj['pointers']['mesh']['dimensions'] and obj['user_xy']: # Does it need to be interpolated?
-      if obj['inter.mesh']=="nearest":data=data[obj['nodeIndex']]
-      elif obj['inter.mesh']=="linear":data=inter.mesh(obj["meshx"],obj["meshy"],obj["elem"],data,obj['x'],obj['y'])
-      else:raise Exception("")
-      
-    elif dim in obj['pointers']['xy']['dimensions']  and obj['user_xy']: # Does it need to be interpolated?
+    elif dim in obj['pointers']['mesh']['dimensions'] and obj['user_xy']:
+      if obj['inter.mesh']=="nearest":
+        data=data[obj['nodeIndex']]
+      elif obj['inter.mesh']=="linear":
+        insideData=data[:len(obj["meshx"])]
+        outsideData=data[len(obj["meshx"]):]
+        data=inter.mesh(obj["meshx"],obj["meshy"],obj["elem"],insideData,obj['x'],obj['y'])
+        if obj['extra.mesh']=="nearest":
+          data[obj['iOutsideElem']]=outsideData[obj['nodeIndex']]
+          
+      else:raise Exception("Method {} does not exist".format(obj['inter.mesh']))
+    elif dim in obj['pointers']['xy']['dimensions']  and obj['user_xy']: 
       if obj['inter.xy']=="nearest":data=data[obj['xyIndex']]
       else:raise Exception("")
   

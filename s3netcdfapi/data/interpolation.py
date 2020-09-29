@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib.tri import Triangulation,LinearTriInterpolator
 from scipy import interpolate
 import sys
+import time
 
 def _checkBounds(_datetimes,datetimes):
   """
@@ -21,8 +22,7 @@ def timeSeries(_datetimes,datetimes,_data=None,bounds_error=True,kind='nearest')
     _checkBounds(_datetimes,datetimes)
   f = interpolate.interp1d(_datetimes.astype("f8"), _data,kind=kind,axis=0)
   return f(datetimes.astype("f8"))
-  
-
+        
 def mesh(x,y,elem,data,_x,_y):
   """
   """
@@ -39,3 +39,5 @@ def mesh(x,y,elem,data,_x,_y):
       lti=LinearTriInterpolator(tri,data[:,i],trifinder)
       intdata[:,i]=lti(_x,_y)
     return intdata
+  else:
+    raise Exception("Not programmed")

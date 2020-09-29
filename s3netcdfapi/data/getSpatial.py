@@ -14,10 +14,16 @@ from scipy.spatial import cKDTree
 def getSpatial(netcdf2d,obj,dname,type='mesh'):
   """
   """
-  if obj['longitude'] is not None:obj['x']=obj['longitude'] # Test1
-  if obj['latitude'] is not None:obj['y']=obj['latitude']
-  del obj['longitude']
-  del obj['latitude']
+  x=netcdf2d.getVariableByDimension('nnode',netcdf2d.pointers['mesh'],'x')
+  y=netcdf2d.getVariableByDimension('nnode',netcdf2d.pointers['mesh'],'y')
+  if obj[x] is not None:obj['x']=obj[x] # Test1
+  if obj[y] is not None:obj['y']=obj[y]
+  # if obj['longitude'] is not None:obj['x']=obj['longitude'] # Test1
+  # if obj['latitude'] is not None:obj['y']=obj['latitude']
+  # del obj['longitude']
+  # del obj['latitude']
+  del obj[x]
+  del obj[y]  
   idname="i"+dname[1:]
     
   obj['user_xy']=False
@@ -61,16 +67,27 @@ def linear(netcdf2d,obj,idname):
   tri = Triangulation(obj['_meshx'], obj['_meshy'], elem)
   trifinder = tri.get_trifinder()
   ielem=trifinder.__call__(obj['x'], obj['y'])
+  
   uielem,elemIndex=np.unique(ielem,return_inverse=True)
   idx=elem[uielem].astype("int32")
   inode,nodeIndex=np.unique(idx,return_inverse=True)
-
+  
+  
   obj['meshx']=obj['_meshx'][inode]
   obj['meshy']=obj['_meshy'][inode]
   obj['elem']=nodeIndex.reshape(idx.shape)
   obj[idname]=inode
+  
+  iOutsideElem=ielem==-1
+  if any(iOutsideElem):
+    
+    obj['xy']=obj['xy'][iOutsideElem]
+    obj['iOutsideElem']=iOutsideElem
+    obj=nearest(netcdf2d,obj,"_"+idname)
+    obj[idname]=np.append(obj[idname],obj["_"+idname])
+  
   return obj
-
+  
 
 def nearest(netcdf2d,obj,idname):
   """
@@ -80,6 +97,7 @@ def nearest(netcdf2d,obj,idname):
   kdtree = cKDTree(_meshxy)
   distance,inode=kdtree.query(obj['xy'],1)
   inode,nodeIndex=np.unique(inode.ravel(),return_inverse=True)
+  
   obj[idname]=inode
   obj['nodeIndex']=nodeIndex
   return obj

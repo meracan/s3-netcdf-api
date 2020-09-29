@@ -20,10 +20,12 @@ def test_query():
     # print(netcdf2d.run({"export":"csv","variable":"hs","inode":0,"start":"2014-01-01","end":"2014-01-10"}))
     
     # Error testing
-    print(netcdf2d.run({"export":"csv","variable":"hs","inode":0,"start":"2013-01-01","end":"2014-01-10"}))
+    # print(netcdf2d.run({"export":"csv","variable":"hs","inode":0,"start":"2003-01-01","end":"2019-01-10"}))
+    # print(netcdf2d.run({"export":"csv","variable":"hs","inode":0,"start":"2016-01-01","end":"2019-01-10"}))
+    # print(netcdf2d.run({"export":"csv","variable":"hs","x":-160.0,"y":0,"itime":0,"inter.mesh":"linear"}))
     
     
-    # print(netcdf2d.run({"export":"csv","variable":"hs","inode":0,"itime":[0,1]}))
+    print(netcdf2d.run({}))
     
     
     
