@@ -100,6 +100,8 @@ def test_getData_SWAN():
   # print(_getData(netcdf2d,netcdf2d.prepareInput({"itime":[0,1,2,3,4],"inode":39,"variable":"hs"}),"hs")['data'])
   
   
+  print(_getData(netcdf2d,netcdf2d.prepareInput({"itime":0,"variable":"hs"}),"hs")['data'])
+  
 
 def test_getDataLimits():
   print(_getData(netcdf2d,netcdf2d.prepareInput({"x":0.0,"y":0.0,"variable":"u","itime":0,"inter.mesh":"linear"}),"u")['data'])
