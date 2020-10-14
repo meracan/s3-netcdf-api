@@ -41,14 +41,18 @@ def main():
   input = dict(
     name="input1",
     cacheLocation=r"../s3",
-    localOnly=False,
+    localOnly=True,
     
     bucket="uvic-bcwave",
     cacheSize=10.0,
     ncSize=1.0,
     
     nca = dict(
-      metadata=dict(title="input1"),
+      metadata=dict(title="input1",
+      spatial={"x":"x","y":"y","elem":"elem","dim":"nnode"},
+      temporal={"time":"time","dim":"ntime"},
+      spectral={"sx":"sx","sy":"sy","dim":"nsnode"}
+      ),
       dimensions = dict(
         npe=3,
         nelem=len(elem),

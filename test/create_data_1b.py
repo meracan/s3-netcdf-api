@@ -48,7 +48,11 @@ def main():
     ncSize=1.0,
     
     nca = dict(
-      metadata=dict(title="input1"),
+      metadata=dict(title="input1b",
+      spatial={"x":"x","y":"y","elem":"elem","dim":"nnode"},
+      temporal={"time":"time","dim":"ntime"},
+      spectral={"sx":"sx","sy":"sy","dim":"nsnode"}
+      ),
       dimensions = dict(
         npe=3,
         nelem=elem.shape[0],

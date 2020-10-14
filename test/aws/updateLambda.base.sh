@@ -24,7 +24,7 @@ pip install --no-deps -t . kiwisolver
 pip install --no-deps -t . pillow
 
 
-pip install --no-deps -t . $FOLDER/binary-py
+pip install --no-deps -t . $FOLDER/binpy
 pip install --no-deps -t . $FOLDER/s3-netcdf
 pip install --no-deps -t . $FOLDER/slf-py
 

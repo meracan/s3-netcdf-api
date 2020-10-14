@@ -123,6 +123,12 @@ def test_prepareInput():
   np.testing.assert_array_equal(obj['start'],np.array(np.datetime64('2000-02-11T13')))
   np.testing.assert_array_equal(obj['end'],np.array(np.datetime64('2000-02-11T15')))
 
+# def test_cacheName():
+#   parameters={'longitude':[0.1],'latitude':[0.2],"variable":"x"}
+#   parameters={'longitude':[0.1,0.1],'latitude':[0.2,0.2],"variable":"x,y"}
+#   parameters={'longitude':[0.1,0.1],'latitude':[0.2,0.2],"variable":"x,y,hs","start":"2000-01-01","end":"2000-01-02"}
+#   netcdf2d.getCacheName(parameters)
+#   None
 
 if __name__ == "__main__":
   test_getDefaultParameters()
@@ -130,3 +136,4 @@ if __name__ == "__main__":
   test_parseParameters()
   test_checkExport()
   test_prepareInput()
+  # test_cacheName()

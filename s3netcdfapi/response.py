@@ -11,7 +11,12 @@ def response(ContentType,Body):
   """
   return {
       'statusCode': 200,
-      'headers': {"content-type": ContentType},
+      'headers': {
+        "Content-Type": ContentType,
+        "Access-Control-Allow-Origin": "*",
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Expose-Headers': 'Content-Type',
+      },
       'body':Body
     } 
 
@@ -32,6 +37,8 @@ def responseSignedURL(signedUrl,origin=None):
   		"Location": signedUrl,
   		# "Access-Control-Allow-Origin": origin,
   		"Access-Control-Allow-Origin": "*",
+  		'Access-Control-Allow-Headers': 'Content-Type',
+  		'Access-Control-Expose-Headers': 'Content-Type',
   		# "Access-Control-Allow-Credentials": "true",
   		# "Vary": "Origin",
   	}

@@ -1,3 +1,4 @@
+import gzip
 
 def getUniqueGroups(groups,obj):
     """ Get unique groups based on the variables
@@ -98,4 +99,7 @@ def getIdx(obj,name):
   group=pointer['group']
   variable=pointer['variable']
   return (group,variable)
-  
+
+def compress(filePath,outPath):
+  with open(filePath, 'rb') as src, gzip.open(outPath, 'wb') as dst:        
+    dst.writelines(src)

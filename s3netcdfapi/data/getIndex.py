@@ -10,11 +10,11 @@ def getIndex(netcdf2d,obj):
   dnames=list(set(dnames))
 
   for dname in dnames:
-    if dname in obj['pointers']['temporal']['dimensions']:
+    if dname==netcdf2d.temporal['dim']:
       obj=getTemporal(netcdf2d,obj,dname)
-    elif dname in obj['pointers']['mesh']['dimensions']:
+    elif dname==netcdf2d.spatial['dim']:
       obj=getSpatial(netcdf2d,obj,dname,'mesh')
-    elif dname in obj['pointers']['xy']['dimensions']:
+    elif dname==netcdf2d.spectral['dim']:
       obj=getSpatial(netcdf2d,obj,dname,"xy")
     else:continue
       

@@ -14,16 +14,15 @@ from scipy.spatial import cKDTree
 def getSpatial(netcdf2d,obj,dname,type='mesh'):
   """
   """
-  x=netcdf2d.getVariableByDimension('nnode',netcdf2d.pointers['mesh'],'x')
-  y=netcdf2d.getVariableByDimension('nnode',netcdf2d.pointers['mesh'],'y')
-  if obj[x] is not None:obj['x']=obj[x] # Test1
-  if obj[y] is not None:obj['y']=obj[y]
-  # if obj['longitude'] is not None:obj['x']=obj['longitude'] # Test1
-  # if obj['latitude'] is not None:obj['y']=obj['latitude']
-  # del obj['longitude']
-  # del obj['latitude']
-  del obj[x]
-  del obj[y]  
+  
+  
+  
+  
+  if obj['longitude'] is not None:obj['x']=obj['longitude'];del obj['longitude']
+  if obj['latitude'] is not None:obj['y']=obj['latitude'];del obj['latitude']
+  if obj['lon'] is not None:obj['x']=obj['lon'];del obj['lon']
+  if obj['lat'] is not None:obj['y']=obj['lat'];del obj['lat']  
+
   idname="i"+dname[1:]
     
   obj['user_xy']=False
@@ -52,10 +51,9 @@ def getSpatial(netcdf2d,obj,dname,type='mesh'):
 
 
 def getMesh(netcdf2d,obj):
-  mesh=netcdf2d.getMeshMeta()
-  if not '_meshx' in obj or obj['_meshx'] is None:obj['_meshx']=netcdf2d.query({"variable":mesh['x']})
-  if not '_meshy' in obj or obj['_meshy'] is None:obj['_meshy']=netcdf2d.query({"variable":mesh['y']})
-  if not '_elem' in obj or obj['_elem'] is None: obj['_elem']=netcdf2d.query({"variable":mesh['elem']})
+  if not '_meshx' in obj or obj['_meshx'] is None:obj['_meshx']=netcdf2d.query({"variable":netcdf2d.spatial['x']})
+  if not '_meshy' in obj or obj['_meshy'] is None:obj['_meshy']=netcdf2d.query({"variable":netcdf2d.spatial['y']})
+  if not '_elem' in obj or obj['_elem'] is None: obj['_elem']=netcdf2d.query({"variable":netcdf2d.spatial['elem']})
   return obj
 
 
@@ -106,12 +104,8 @@ def nearest(netcdf2d,obj,idname):
 def nearestXY(netcdf2d,obj,dname,idname):
   """
   """
-  vnames=netcdf2d.getVariablesByDimension(dname)
-  x=next(x for x in vnames if x in obj['pointers']['xy']['x'])
-  y=next(x for y in vnames if y in obj['pointers']['xy']['y'])
-  
-  obj['_x']=netcdf2d.query({"variable":x})
-  obj['_y']=netcdf2d.query({"variable":y})
+  obj['_x']=netcdf2d.query({"variable":netcdf2d.spectral['sx']})
+  obj['_y']=netcdf2d.query({"variable":netcdf2d.spectral['sy']})
 
   sxy=np.column_stack((obj['_x'],obj['_y']))
   kdtree = cKDTree(sxy)

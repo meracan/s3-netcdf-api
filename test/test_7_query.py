@@ -25,6 +25,8 @@ def test_query():
     # print(netcdf2d.run({"export":"csv","variable":"hs","x":-160.0,"y":0,"itime":0,"inter.mesh":"linear"}))
     
     
+    # print(netcdf2d.run({}))
+    # print(netcdf2d.run({"export":"bin","variable":"elem"}))
     print(netcdf2d.run({}))
     
     

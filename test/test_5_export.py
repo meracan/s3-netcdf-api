@@ -4,6 +4,7 @@ import pandas as pd
 import json
 from netCDF4 import Dataset
 from s3netcdfapi import S3NetCDFAPI
+import binpy
 
 from s3netcdfapi.data import getData
 import s3netcdfapi.export as export
@@ -143,16 +144,28 @@ def test_netcdf():
     np.testing.assert_array_almost_equal(src_file.variables['x'][:],[-160.0,-159.9,-159.8],5)
     np.testing.assert_array_almost_equal(src_file.variables['y'][:],[40.0,40.0,40.0])
     np.testing.assert_array_almost_equal(src_file.variables['u'][:],[[0.,1.,2.],[10302.,10303.,10304.]])  
-  
 
 def test_slf():
   obj=netcdf2d.prepareInput({"export":"slf","variable":"u,v","inode":[0,1,2],"itime":[0,1]})
   export.to_slf(obj,getData(netcdf2d,obj))
 
 
-# def test_binary():
-#     export.binary()
-    
+def test_binary():
+  obj=netcdf2d.prepareInput({"export":"bin","variable":"u,v","inode":[0,1,2],"itime":[0,1]})
+  export.to_binary(obj,getData(netcdf2d,obj))
+  with open(obj["filepath"]+".bin","rb") as f:
+    results=binpy.read(f)
+
+  np.testing.assert_array_equal(results["u"],[[0.,1.,2.],[10302.,10303.,10304.]])
+  
+  obj=netcdf2d.prepareInput({"export":"bin","variable":"mesh"})
+  export.to_binary(obj,getData(netcdf2d,obj))
+  with open(obj["filepath"]+".bin","rb") as f:
+    results=binpy.read(f)
+  np.testing.assert_array_almost_equal(results['elem'],netcdf2d['elem','elem'])
+  np.testing.assert_array_almost_equal(results['x'],netcdf2d['node','x'])
+  np.testing.assert_array_almost_equal(results['y'],netcdf2d['node','y'])
+  
 
 # def test_mat():
 #     export.mat()
@@ -166,14 +179,14 @@ def test_slf():
 #     export.tri()
 
 if __name__ == "__main__":
-  test_table()
-  test_csv()
-  test_json()
-  test_geojson()
-  test_netcdf()
+  # test_table()
+  # test_csv()
+  # test_json()
+  # test_geojson()
+  # test_netcdf()
+  test_binary()
   
-  test_slf()
-  # test_binary()
+  # test_slf()
   # test_mat()
   # test_shapefile()
   # test_tri()
