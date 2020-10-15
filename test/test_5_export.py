@@ -101,8 +101,6 @@ def test_table():
   np.testing.assert_array_almost_equal(df['Datetime'].values.astype("datetime64[h]").astype("float64"),netcdf2d['time','time'].astype("datetime64[h]").astype("float64"))
   
   
-  
-  
 def test_csv():
   # Test 1
   obj=netcdf2d.prepareInput({"variable":"u,v","inode":[0,1,2],"itime":[0,1]})
@@ -151,22 +149,57 @@ def test_slf():
 
 
 def test_binary():
-  obj=netcdf2d.prepareInput({"export":"bin","variable":"u,v","inode":[0,1,2],"itime":[0,1]})
-  export.to_binary(obj,getData(netcdf2d,obj))
-  with open(obj["filepath"]+".bin","rb") as f:
-    results=binpy.read(f)
-
-  np.testing.assert_array_equal(results["u"],[[0.,1.,2.],[10302.,10303.,10304.]])
   
   obj=netcdf2d.prepareInput({"export":"bin","variable":"mesh"})
-  export.to_binary(obj,getData(netcdf2d,obj))
-  with open(obj["filepath"]+".bin","rb") as f:
-    results=binpy.read(f)
+  export.to_binary(netcdf2d,obj,getData(netcdf2d,obj))
+  with open(obj["filepath"]+".bin","rb") as f:results=binpy.read(f)
   np.testing.assert_array_almost_equal(results['elem'],netcdf2d['elem','elem'])
   np.testing.assert_array_almost_equal(results['x'],netcdf2d['node','x'])
   np.testing.assert_array_almost_equal(results['y'],netcdf2d['node','y'])
   
-
+  obj=netcdf2d.prepareInput({"export":"bin","variable":"time"})
+  export.to_binary(netcdf2d,obj,getData(netcdf2d,obj))
+  with open(obj["filepath"]+".bin","rb") as f:results=binpy.read(f)
+  np.testing.assert_array_equal(results['time'],netcdf2d['time','time'])
+  
+  obj=netcdf2d.prepareInput({"export":"bin","variable":"freq"})
+  export.to_binary(netcdf2d,obj,getData(netcdf2d,obj))
+  with open(obj["filepath"]+".bin","rb") as f:results=binpy.read(f)
+  np.testing.assert_array_equal(results['freq'],netcdf2d['freq','freq'])
+  
+  obj=netcdf2d.prepareInput({"export":"bin","variable":"u","itime":0})
+  export.to_binary(netcdf2d,obj,getData(netcdf2d,obj),0,10301)
+  with open(obj["filepath"]+".bin","rb") as f:results=binpy.read(f)
+  image=results['u_s_0'].reshape(netcdf2d.res()*netcdf2d.res(),2)
+  nnode=netcdf2d._meta['dimensions']['nnode']
+  np.testing.assert_array_almost_equal(np.round(export.decode(image,0,10301)[:nnode]),np.squeeze(netcdf2d['s','u',0]))
+  
+  obj=netcdf2d.prepareInput({"export":"bin","variable":"u","inode":0})
+  export.to_binary(netcdf2d,obj,getData(netcdf2d,obj))
+  with open(obj["filepath"]+".bin","rb") as f:results=binpy.read(f)
+  np.testing.assert_array_almost_equal(results['u_t_0'],np.squeeze(netcdf2d['t','u',0]))  
+  
+  obj=netcdf2d.prepareInput({"export":"bin","variable":"u","x":-159.0,"y":40.0})
+  export.to_binary(netcdf2d,obj,getData(netcdf2d,obj))
+  with open(obj["filepath"]+".bin","rb") as f:results=binpy.read(f)
+  np.testing.assert_array_almost_equal(results['u_t_-159.0_40.0'],np.squeeze(netcdf2d['t','u',10]))  
+  
+  obj=netcdf2d.prepareInput({"export":"bin","variable":"spectra","isnode":0,"itime":0})
+  export.to_binary(netcdf2d,obj,getData(netcdf2d,obj))
+  with open(obj["filepath"]+".bin","rb") as f:results=binpy.read(f)
+  np.testing.assert_array_almost_equal(results['spectra_0_0'],np.squeeze(netcdf2d['spc','spectra',0,0]))  
+  
+  obj=netcdf2d.prepareInput({"export":"bin","variable":"spectra","itime":0,"x":-159.0,"y":40.0})
+  export.to_binary(netcdf2d,obj,getData(netcdf2d,obj))
+  with open(obj["filepath"]+".bin","rb") as f:results=binpy.read(f)
+  np.testing.assert_array_almost_equal(results['spectra_-159.0_40.0_0'],np.squeeze(netcdf2d['spc','spectra',5,0]))  
+  
+  obj=netcdf2d.prepareInput({"export":"bin","variable":"spectra","start":"2000-01-01T02","end":"2000-01-01T02","x":-159.0,"y":40.0})
+  export.to_binary(netcdf2d,obj,getData(netcdf2d,obj))
+  with open(obj["filepath"]+".bin","rb") as f:results=binpy.read(f)
+  np.testing.assert_array_almost_equal(results['spectra_-159.0_40.0_2000-01-01T02:00:00'],np.squeeze(netcdf2d['spc','spectra',5,2])) 
+ 
+  
 # def test_mat():
 #     export.mat()
 
@@ -178,12 +211,13 @@ def test_binary():
 # def test_tri():
 #     export.tri()
 
+
 if __name__ == "__main__":
-  # test_table()
-  # test_csv()
-  # test_json()
-  # test_geojson()
-  # test_netcdf()
+  test_table()
+  test_csv()
+  test_json()
+  test_geojson()
+  test_netcdf()
   test_binary()
   
   # test_slf()

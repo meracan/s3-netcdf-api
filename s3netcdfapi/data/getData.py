@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 import collections
 from . import interpolation as inter
 from .utils import cleanObject,swapAxes,swapAxe
@@ -26,12 +27,13 @@ def _getData(netcdf2d,obj,variable,_odimensions=None):
   """
   # _dimensions=netcdf2d.getDimensionsByVariable(variable)
   _dimensions=netcdf2d.getMetaByVariable(variable)['dimensions']
-  if _odimensions is None:_odimensions=_dimensions
+  
   
   # print(cleanObject({**obj,'variable':variable},_dimensions))
   # Get data from s3-NetCDF
   _obj=cleanObject({**obj,'variable':variable},_dimensions)
   data,dimensions,indices=netcdf2d.query(_obj,return_dimensions=True,return_indices=True)
+  _odimensions=copy.copy(dimensions)
   
   
   # Data Interpolation
@@ -56,7 +58,6 @@ def _getData(netcdf2d,obj,variable,_odimensions=None):
   
   # Swap axes as required
   data,dimensions=swapAxes(data,dimensions,_odimensions)
-
   
   # Prepare return object
   newObj={"name":variable,"data":data,"meta":netcdf2d.getMetaByVariable(variable),"dimData":None,"dimensions":dimensions,"indices":indices}

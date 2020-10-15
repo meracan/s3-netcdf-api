@@ -57,6 +57,7 @@ class S3NetCDFAPI(NetCDF2D):
         "id":self.name,
         "url":"https://"+url,
         "dimensions":self._meta['dimensions'],
+        "res":self.res(),
         "variables":self.getVariables(),
         "parameters":self.getDefaultParametersExtra(),
         "comments":"",
@@ -174,6 +175,9 @@ class S3NetCDFAPI(NetCDF2D):
   def getParameters(self,parameters):
     return {**parseParameters(self.getDefaultParameters(),parameters)}
   
+  def res(self):
+    return int(np.ceil(np.sqrt(self._meta['dimensions'][self.spatial['dim']])))
+  
   def prepareInput(self,parameters):
     """
     """
@@ -217,6 +221,7 @@ class S3NetCDFAPI(NetCDF2D):
       obj["dataOnly"]=True
     
     obj['filepath']=os.path.join(self.apiCacheLocation,str(uuid.uuid4()))
+    obj['res']=self.res();
     
     obj['groups']=groups=self.getGroups(obj)
     obj['ngroups']=ngroups=len(groups)

@@ -31,8 +31,9 @@ def test_getMeta():
   
   data=_getData(netcdf2d,netcdf2d.prepareInput({"inode":[0,1],"variable":"u"}),"u")
   dimData=data['dimData']
-  assert getMeta(dimData,"header")==['Datetime','Longitude','Latitude']
-  assert getMeta(dimData,"type")==['float64','float32','float32']
+ 
+  assert getMeta(dimData,"header")==['Longitude','Latitude','Datetime']
+  assert getMeta(dimData,"type")==['float32','float32','float64']
   assert getMeta(dimData,'header',data,True)['x']=="Longitude"
   assert getMeta(dimData,'header',data,True)['y']=="Latitude"
   assert getMeta(dimData,'header',data,True)['time']=="Datetime"
@@ -47,7 +48,7 @@ def test_combineValues():
 def test_dimData2Table():
   data=_getData(netcdf2d,netcdf2d.prepareInput({"inode":[0,1],"variable":"u"}),"u")
   dimData=data['dimData']
-  assert dimData2Table(data['data'],dimData)[0]=='2000-01-01T00:00:00,-160.0,40.0'
+  assert dimData2Table(data['data'],dimData)[0]=='-160.0,40.0,2000-01-01T00:00:00'
   
 
 if __name__ == "__main__":

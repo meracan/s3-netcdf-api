@@ -4,7 +4,7 @@ from .to_excel import to_excel
 from .to_json import to_json
 from .to_geojson import to_geojson
 from .to_netcdf import to_netcdf
-from .to_binary import to_binary
+from .to_binary import to_binary,decode,encode
 
 from .slf import to_slf
 
