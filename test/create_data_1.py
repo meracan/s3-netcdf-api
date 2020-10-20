@@ -41,7 +41,7 @@ def main():
   input = dict(
     name="input1",
     cacheLocation=r"../s3",
-    localOnly=True,
+    localOnly=False,
     
     bucket="uvic-bcwave",
     cacheSize=10.0,

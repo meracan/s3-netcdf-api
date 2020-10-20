@@ -80,7 +80,7 @@ def test_getData():
   np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","isnode":0}))['spectra']['data'],netcdf2d['spc','spectra',0])
   np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","isnode":0,"start":"2000-01-01T00:00","end":"2000-01-02T00:00"}))['spectra']['data'].shape,(1,25,33,36))
   np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","start":"2000-01-01T00:00","end":"2000-01-02T00:00","x":-150.0,"y":50.0}))['spectra']['dimData']['snode']['subdata']['stationname']['data'],np.array(['f']))
-  
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","start":"2000-01-01T00:00","end":"2000-01-01T00:00","x":-150.0,"y":50.0}))['spectra']['dimData']['snode']['subdata']['stationname']['data'],np.array(['f']))
   
 
 def test_getDataLimits():

@@ -38,13 +38,13 @@ def getTemporal(netcdf2d,obj,dname):
 
     # Get minimum index
     _s=np.argsort(np.abs(dt - obj['start'])) 
-    # s=np.minimum(_s[0],_s[1]) 
-    s=_s[0]
+    s=np.minimum(_s[0],_s[1]) 
     
     # Get maximum index
     _e=np.argsort(np.abs(dt - obj['end']))
-    # e=np.maximum(_e[0],_e[1]) 
-    e=_e[0]
+    e=np.maximum(_e[0],_e[1]) 
+    
+    
     
     obj[idname]=np.arange(s,e+1,dtype="int")
     obj['_time']=obj['_time'][obj[idname]]

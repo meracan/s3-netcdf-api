@@ -26,7 +26,7 @@ def test_query():
     # print(netcdf2d.run({"export":"csv","variable":"hs","x":-160.0,"y":0,"itime":0,"inter.mesh":"linear"}))
     
     
-    print(netcdf2d.run({"export":"csv","variable":"spectra","x":-125.55,"y":48.92,"start":"2010-02-02T02","end":"2010-02-02T03"}))
+    print(netcdf2d.run({"export":"csv","variable":"spectra","x":-125.55,"y":48.92,"start":"2010-02-02T02","end":"2010-02-02T02"}))
     
     
     # print(netcdf2d.run({"export":"bin","variable":"elem"}))
