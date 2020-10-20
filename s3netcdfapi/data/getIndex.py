@@ -1,5 +1,6 @@
 from .getTemporal import getTemporal
 from .getSpatial import getSpatial
+from .getSpectral import getSpectral
 
 
 def getIndex(netcdf2d,obj):
@@ -16,6 +17,7 @@ def getIndex(netcdf2d,obj):
       obj=getSpatial(netcdf2d,obj,dname,'mesh')
     elif dname==netcdf2d.spectral['dim']:
       obj=getSpatial(netcdf2d,obj,dname,"xy")
+      obj=getSpectral(netcdf2d,obj,dname)
     else:continue
       
   return obj

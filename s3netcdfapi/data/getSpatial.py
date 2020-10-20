@@ -14,17 +14,8 @@ from scipy.spatial import cKDTree
 def getSpatial(netcdf2d,obj,dname,type='mesh'):
   """
   """
-  
-  
-  
-  
-  if obj['longitude'] is not None:obj['x']=obj['longitude'];del obj['longitude']
-  if obj['latitude'] is not None:obj['y']=obj['latitude'];del obj['latitude']
-  if obj['lon'] is not None:obj['x']=obj['lon'];del obj['lon']
-  if obj['lat'] is not None:obj['y']=obj['lat'];del obj['lat']  
-
+ 
   idname="i"+dname[1:]
-    
   obj['user_xy']=False
   if obj[idname] is not None: # Test3
     if isinstance(obj[idname],(int)):obj[idname]=[obj[idname]]
@@ -113,4 +104,5 @@ def nearestXY(netcdf2d,obj,dname,idname):
   isnode,xyIndex=np.unique(isnode.ravel(),return_inverse=True)
   obj[idname]=isnode
   obj['xyIndex']=xyIndex
+  
   return obj

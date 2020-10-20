@@ -51,7 +51,7 @@ def main():
       metadata=dict(title="input1b",
       spatial={"x":"x","y":"y","elem":"elem","dim":"nnode"},
       temporal={"time":"time","dim":"ntime"},
-      spectral={"sx":"sx","sy":"sy","dim":"nsnode"}
+      spectral={"sx":"sx","sy":"sy","dim":"nsnode","stationId":"stationid","stationName":"name"}
       ),
       dimensions = dict(
         npe=3,

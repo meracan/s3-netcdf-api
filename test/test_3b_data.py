@@ -16,10 +16,12 @@ def test_getData_SWAN():
   }
   netcdf2d=S3NetCDFAPI(input)
   
-  np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"inode":[0,1],"variable":"lon"}),"lon")['data'],netcdf2d['nodes','lon',[0,1]])
-  np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"variable":"lon"}),"lon")['data'],netcdf2d['nodes','lon'])
-  np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"inode":[0,1],"variable":"lat"}),"lat")['data'],netcdf2d['nodes','lat',[0,1]])
-  np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"variable":"lat"}),"lat")['data'],netcdf2d['nodes','lat'])  
+  # np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"inode":[0,1],"variable":"lon"}),"lon")['data'],netcdf2d['nodes','lon',[0,1]])
+  # np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"variable":"lon"}),"lon")['data'],netcdf2d['nodes','lon'])
+  # np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"inode":[0,1],"variable":"lat"}),"lat")['data'],netcdf2d['nodes','lat',[0,1]])
+  # np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"variable":"lat"}),"lat")['data'],netcdf2d['nodes','lat'])  
+  # np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"variable":"elem"}),"elem")['data'],netcdf2d['elem','elem'])
+  
   
   # print(_getData(netcdf2d,netcdf2d.prepareInput({"inode":[0,1],"variable":"lon"}),"lon")['data'])
   # print(_getData(netcdf2d,netcdf2d.prepareInput({"inode":[0,1],"variable":"lat"}),"lat")['data'])

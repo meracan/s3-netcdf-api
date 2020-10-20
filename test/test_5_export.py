@@ -21,7 +21,7 @@ netcdf2d=S3NetCDFAPI(input)
 
 
 def test_table():
-  # Test 1
+  # Test X,Y
   obj=netcdf2d.prepareInput({"variable":"x,y","inode":[0,1]})
   df=export.to_table(obj,getData(netcdf2d,obj))
   np.testing.assert_array_almost_equal(df['Longitude'].values,[-160.0,-159.899994])
@@ -30,6 +30,12 @@ def test_table():
   df=export.to_table(obj,getData(netcdf2d,obj))
   np.testing.assert_array_almost_equal(df['Longitude'].values,netcdf2d['node','x'])
   np.testing.assert_array_almost_equal(df['Latitude'].values,netcdf2d['node','y'])
+  
+  # Test Elem
+  obj=netcdf2d.prepareInput({"variable":"elem"})
+  df=export.to_table(obj,getData(netcdf2d,obj))
+  print(df)
+  
   
   # Test 2
   obj=netcdf2d.prepareInput({"variable":"u,v","inode":[0,1,2],"itime":[0,1]})
@@ -161,6 +167,7 @@ def test_binary():
   export.to_binary(netcdf2d,obj,getData(netcdf2d,obj))
   with open(obj["filepath"]+".bin","rb") as f:results=binpy.read(f)
   np.testing.assert_array_equal(results['time'],netcdf2d['time','time'])
+  print(results['time'])
   
   obj=netcdf2d.prepareInput({"export":"bin","variable":"freq"})
   export.to_binary(netcdf2d,obj,getData(netcdf2d,obj))
@@ -214,11 +221,11 @@ def test_binary():
 
 if __name__ == "__main__":
   test_table()
-  test_csv()
-  test_json()
-  test_geojson()
-  test_netcdf()
-  test_binary()
+  # test_csv()
+  # test_json()
+  # test_geojson()
+  # test_netcdf()
+  # test_binary()
   
   # test_slf()
   # test_mat()

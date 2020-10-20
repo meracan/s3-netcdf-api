@@ -20,24 +20,32 @@ netcdf2d=S3NetCDFAPI(input)
 
 
 def test_table():
-  # Test 1
-  obj=netcdf2d.prepareInput({"variable":"lon,lat","inode":[0,1]})
-  r=getData(netcdf2d,obj)
-  np.testing.assert_array_almost_equal(r['lon']['data'],[0,0.1])
-  np.testing.assert_array_almost_equal(r['lat']['data'],[0,0])
+  # # Test Lon/Lat
+  # obj=netcdf2d.prepareInput({"variable":"lon,lat","inode":[0,1]})
+  # r=getData(netcdf2d,obj)
+  # np.testing.assert_array_almost_equal(r['lon']['data'],[0,0.1])
+  # np.testing.assert_array_almost_equal(r['lat']['data'],[0,0])
   
-  obj=netcdf2d.prepareInput({"variable":"lon,lat"})
-  r=getData(netcdf2d,obj)
-  np.testing.assert_array_almost_equal(r['lon']['data'],netcdf2d['node','lon'])
-  np.testing.assert_array_almost_equal(r['lat']['data'],netcdf2d['node','lat'])
+  # obj=netcdf2d.prepareInput({"variable":"lon,lat"})
+  # r=getData(netcdf2d,obj)
+  # np.testing.assert_array_almost_equal(r['lon']['data'],netcdf2d['node','lon'])
+  # np.testing.assert_array_almost_equal(r['lat']['data'],netcdf2d['node','lat'])
  
-  # Test 2
-  obj=netcdf2d.prepareInput({"variable":"hs,u10","inode":[0,1,2],"itime":[0,1]})
-  r=getData(netcdf2d,obj)
-  np.testing.assert_array_almost_equal(r['hs']['data'],[[0,1,2],[10201,10202,10203]])
+  # Test Elem
+  obj=netcdf2d.prepareInput({"variable":"elem"})
+  df=export.to_table(obj,getData(netcdf2d,obj))
+  np.testing.assert_array_almost_equal(df['n1'],netcdf2d['elem','elem'][:,0])
+  np.testing.assert_array_almost_equal(df['n2'],netcdf2d['elem','elem'][:,1])
+  np.testing.assert_array_almost_equal(df['n3'],netcdf2d['elem','elem'][:,2])
+ 
+ 
+  # # Test 2
+  # obj=netcdf2d.prepareInput({"variable":"hs,u10","inode":[0,1,2],"itime":[0,1]})
+  # r=getData(netcdf2d,obj)
+  # np.testing.assert_array_almost_equal(r['hs']['data'],[[0,1,2],[10201,10202,10203]])
   
-  obj=netcdf2d.prepareInput({"variable":"spectra","x":0,"y":0,"itime":[0]})
-  r=getData(netcdf2d,obj)
+  # obj=netcdf2d.prepareInput({"variable":"spectra","x":0,"y":0,"itime":[0]})
+  # r=getData(netcdf2d,obj)
 
 def test_binary():
   obj=netcdf2d.prepareInput({"export":"bin","variable":"mesh"})
@@ -68,6 +76,6 @@ def test_binary():
   
 
 if __name__ == "__main__":
-  # test_table()
-  test_binary()
+  test_table()
+  # test_binary()
   

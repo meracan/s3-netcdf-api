@@ -140,7 +140,7 @@ def main():
       metadata=dict(title="input2",
       spatial={"x":"lon","y":"lat","elem":"elem","dim":"nnode"},
       temporal={"time":"time","dim":"ntime"},
-      spectral={"sx":"slon","sy":"slat","dim":"nsnode"}
+      spectral={"sx":"slon","sy":"slat","dim":"nsnode","stationId":"stationid","stationName":"name"}
       ),
       dimensions = dict(
         npe=3,

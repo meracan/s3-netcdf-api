@@ -108,10 +108,16 @@ class S3NetCDFAPI(NetCDF2D):
     
     parameters['x']={"default":None,"type":(float,list),"comment":"Interpolate spatial data by specifying x/y"}
     parameters['y']={"default":None,"type":(float,list),"comment":"Interpolate spatial data by specifying x/y"}
+    
     parameters['longitude']={"default":None,"type":(float,list),"comment":"Interpolate spatial data by specifying longitude/latitude"}
     parameters['latitude']={"default":None,"type":(float,list),"comment":"Interpolate spatial data by specifying longitude/latitude"}
     parameters['lon']={"default":None,"type":(float,list),"comment":"Interpolate spatial data by specifying lon/lat"}
-    parameters['lat']={"default":None,"type":(float,list),"comment":"Interpolate spatial data by specifying lon/lat"}    
+    parameters['lat']={"default":None,"type":(float,list),"comment":"Interpolate spatial data by specifying lon/lat"} 
+    parameters['sx']={"default":None,"type":(float,list),"comment":"Interpolate spatial/spectral data by specifying"}
+    parameters['sy']={"default":None,"type":(float,list),"comment":"Interpolate spatial/spectral data by specifying x/y"}
+    parameters['slon']={"default":None,"type":(float,list),"comment":"Interpolate spatial/spectral data by specifying lon/lat"}
+    parameters['slat']={"default":None,"type":(float,list),"comment":"Interpolate spatial/spectral data by specifying lon/lat"}
+    parameters['station']={"default":None,"type":(str,list),"comment":"Get spectra information using station/buoy name"}
     
     parameters["start"]={"default":None,"type":str,"comment":"Startdate (yyyy-mm-ddThh:mm:ss)"}
     parameters["end"]={"default":None,"type":str,"comment":"Endate (yyyy-mm-ddThh:mm:ss)"}
@@ -133,7 +139,7 @@ class S3NetCDFAPI(NetCDF2D):
   def temporal(self):return self._meta['metadata'].get('temporal',{"time":"time","dim":"ntime"})
   
   @property
-  def spectral(self):return self._meta['metadata'].get('spectral',{"sx":"sx","sy":"sy","dim":"nsnode"})
+  def spectral(self):return self._meta['metadata'].get('spectral',{"sx":"sx","sy":"sy","dim":"nsnode","stationId":"stationid","stationName":"name"})
 
   def getDefaultParametersExtra(self):
     parameters=self.getDefaultParameters()
@@ -204,6 +210,17 @@ class S3NetCDFAPI(NetCDF2D):
     if obj['variable'] is None: obj['variable']=[]
     if not isinstance(obj['variable'], list):obj['variable']=[obj['variable']]
     obj["dataOnly"]=False
+    
+    if obj['longitude'] is not None:obj['x']=obj['longitude'];del obj['longitude']
+    if obj['latitude'] is not None:obj['y']=obj['latitude'];del obj['latitude']
+    if obj['lon'] is not None:obj['x']=obj['lon'];del obj['lon']
+    if obj['lat'] is not None:obj['y']=obj['lat'];del obj['lat']  
+    
+    if obj['sx'] is not None:obj['x']=obj['sx'];del obj['sx']
+    if obj['sy'] is not None:obj['y']=obj['sy'];del obj['sy']
+    if obj['slon'] is not None:obj['x']=obj['slon'];del obj['slon']
+    if obj['slat'] is not None:obj['y']=obj['slat'];del obj['slat']
+    
     if obj['export']=="slf" and not 'mesh' in obj['variable']:
       obj['variable'].append('mesh')
     if 'mesh' in obj['variable']:
@@ -226,6 +243,9 @@ class S3NetCDFAPI(NetCDF2D):
     obj['groups']=groups=self.getGroups(obj)
     obj['ngroups']=ngroups=len(groups)
     obj['isTable']= ngroups==1
+    
+    
+    
     return obj
   
   

@@ -13,7 +13,11 @@ def to_table(obj,data,return_xy_header=False):
     _header=_getMeta(variable,'header')
     _data=variable['data']
     _dimData=variable['dimData']
-    if _dimData is None:
+    if vname=="elem":
+      df['n1']=_data[:,0]
+      df['n2']=_data[:,1]
+      df['n3']=_data[:,2]
+    elif _dimData is None:
       df[_header]=_data.flatten()
     else:
       if df.empty:

@@ -58,22 +58,40 @@ def test_getDimData():
   
 
 def test_getData():
-  # Test 1
+  # Test X,Y
   # Indices
   np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"inode":[0,1],"variable":"x"}),"x")['data'],netcdf2d['node','x',[0,1]])
   np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"itime":[0],"variable":"u"}),"u",["ntime","nnode"])['data'],netcdf2d['s','u',0])
   np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"isnode":[0],"itime":[0],"variable":"spectra"}),"spectra",["nsnode","ntime","nfreq","ndir"])['data'],netcdf2d['spc','spectra',0,0])
-
+  np.testing.assert_array_equal(_getData(netcdf2d,netcdf2d.prepareInput({"variable":"elem"}),"elem")['data'],netcdf2d['elem','elem'])
+  
+  # Test Station Name and Ids
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"name"}))['name']['data'],np.array(['a','b','c','d','e','f']))
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"stationid"}))['stationid']['data'],netcdf2d['snode','stationid'])  
+  
+  # Test Spectra
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","itime":0}))['spectra']['data'].shape,(10,1,33,36))
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","itime":0,"ifreq":5}))['spectra']['data'].shape,(10,1,1,36))
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","itime":0,"ifreq":5,"idir":0}))['spectra']['data'].shape,(10,1,1,1))
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","itime":0,"ifreq":5,"idir":0}))['spectra']['data'].shape,(10,1,1,1))
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","itime":0,"ifreq":5,"idir":0,"x":-160,"y":40.0}))['spectra']['data'].shape,(1,1,1,1))
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","itime":0,"ifreq":5,"idir":0,"sx":-160,"sy":40.0}))['spectra']['data'].shape,(1,1,1,1))
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","station":"f"}))['spectra']['data'].shape,(3,1000,33,36))
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","isnode":0}))['spectra']['data'],netcdf2d['spc','spectra',0])
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","isnode":0,"start":"2000-01-01T00:00","end":"2000-01-02T00:00"}))['spectra']['data'].shape,(1,25,33,36))
+  np.testing.assert_array_equal(getData(netcdf2d,netcdf2d.prepareInput({"variable":"spectra","start":"2000-01-01T00:00","end":"2000-01-02T00:00","x":-150.0,"y":50.0}))['spectra']['dimData']['snode']['subdata']['stationname']['data'],np.array(['f']))
+  
+  
 
 def test_getDataLimits():
   print(_getData(netcdf2d,netcdf2d.prepareInput({"x":0.0,"y":0.0,"variable":"u","itime":0,"inter.mesh":"linear"}),"u")['data'])
 
 if __name__ == "__main__":
-  test_cleanObject()
-  test_swapAxe()
-  test_swapAxes()
+  # test_cleanObject()
+  # test_swapAxe()
+  # test_swapAxes()
   
-  test_getDimData()
+  # test_getDimData()
   test_getData()
   
   # test_getDataLimits()

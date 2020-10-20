@@ -8,6 +8,7 @@ def getTemporal(netcdf2d,obj,dname):
   """
   idname="i"+dname[1:]
   obj['user_time']=False
+ 
   if obj[idname] is not None:
     if isinstance(obj[idname],int):obj[idname]=[obj[idname]]
     obj['start']=None
@@ -36,13 +37,16 @@ def getTemporal(netcdf2d,obj,dname):
     obj['time']= np.arange(obj['start'], obj['end']+obj['step'],obj['step'], dtype='datetime64[s]')
 
     # Get minimum index
-    _s=np.argsort(np.abs(dt - mindt)) 
-    s=np.minimum(_s[0],_s[1]) 
+    _s=np.argsort(np.abs(dt - obj['start'])) 
+    # s=np.minimum(_s[0],_s[1]) 
+    s=_s[0]
     
     # Get maximum index
-    _e=np.argsort(np.abs(dt - maxdt))
-    e=np.maximum(_e[0],_e[1]) 
+    _e=np.argsort(np.abs(dt - obj['end']))
+    # e=np.maximum(_e[0],_e[1]) 
+    e=_e[0]
     
     obj[idname]=np.arange(s,e+1,dtype="int")
+    obj['_time']=obj['_time'][obj[idname]]
   
   return obj

@@ -1,5 +1,5 @@
 from s3netcdfapi import S3NetCDFAPI
-
+import pandas as pd
 
 def test_query():
     
@@ -8,8 +8,9 @@ def test_query():
     
     netcdf2d=S3NetCDFAPI.init({"id":"SWANv5","bucket":"uvic-bcwave","localOnly":False},{})
     
-    # Test different combination
-    
+    # Elem
+    # df = pd.read_csv("https://api.meracan.ca?variable=elem&export=csv")
+    # print(netcdf2d.run({"export":"csv","variable":"spectra","station":"beverly","itime":[0,1]}))
     # 1 variable
     # print(netcdf2d.run({"export":"csv","variable":"hs","inode":0,"itime":[0,1]}))
     # print(netcdf2d.run({"export":"csv","variable":"hs","inode":[0,1],"itime":[0,1]}))
@@ -24,6 +25,8 @@ def test_query():
     # print(netcdf2d.run({"export":"csv","variable":"hs","inode":0,"start":"2016-01-01","end":"2019-01-10"}))
     # print(netcdf2d.run({"export":"csv","variable":"hs","x":-160.0,"y":0,"itime":0,"inter.mesh":"linear"}))
     
+    
+    print(netcdf2d.run({"export":"csv","variable":"spectra","x":-125.55,"y":48.92,"start":"2010-02-02T02","end":"2010-02-02T03"}))
     
     
     # print(netcdf2d.run({"export":"bin","variable":"elem"}))

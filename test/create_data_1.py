@@ -51,13 +51,15 @@ def main():
       metadata=dict(title="input1",
       spatial={"x":"x","y":"y","elem":"elem","dim":"nnode"},
       temporal={"time":"time","dim":"ntime"},
-      spectral={"sx":"sx","sy":"sy","dim":"nsnode"}
+      spectral={"sx":"sx","sy":"sy","dim":"nsnode","stationId":"stationid","stationName":"name"}
       ),
       dimensions = dict(
         npe=3,
         nelem=len(elem),
         nnode=len(x),
         ntime=1000,
+        nstation=6,
+        nchar=16,
         nsnode=10,
         nfreq=33,
         ndir=36,
@@ -76,8 +78,11 @@ def main():
         snode=dict(dimensions=["nsnode"],variables=dict(
           sx=dict(type="f4",units="" ,standard_name="Longitude" ,long_name=""),
           sy=dict(type="f4",units="" ,standard_name="Latitude" ,long_name=""),
-          feature=dict(type="i4",units="" ,standard_name="Feature" ,long_name=""),
-          )),          
+          stationid=dict(type="i4",units="" ,standard_name="Station Id" ,long_name=""),
+          )),
+        station=dict(dimensions=["nstation","nchar"],variables=dict(
+          name=dict(type="S16",units="" ,standard_name="Station Name" ,long_name="")
+          )),
         freq=dict(dimensions=["nfreq"],variables=dict(
           freq=dict(type="f4",units="Hz" ,standard_name="Frequency" ,long_name=""),
           )),
@@ -111,14 +116,15 @@ def main():
   nsnode=np.prod(netcdf2d.groups["snode"].shape)
   netcdf2d["snode","sx"] = np.arange(nsnode)*0.1-160.0
   netcdf2d["snode","sy"] = np.arange(nsnode)*0.1+40.0
-  feature=np.zeros(nsnode,dtype=np.int32)
-  feature[1]=1
-  feature[2]=2
-  feature[3:5]=3
-  feature[5:7]=4
-  feature[7:10]=5
-  feature[10:]=6
-  netcdf2d["snode","feature"] = feature
+  stationids=np.zeros(nsnode,dtype=np.int32)
+  stationids[1]=1
+  stationids[2]=2
+  stationids[3:5]=3
+  stationids[5:7]=4
+  stationids[7:10]=5
+  stationids[10:]=6
+  netcdf2d["snode","stationid"] = stationids
+  netcdf2d["station","name"]=np.array(['a', 'b', 'c','d','e','f'])
   
   sshape = netcdf2d.groups["s"].shape
   svalue = np.arange(np.prod(sshape)).reshape(sshape)
