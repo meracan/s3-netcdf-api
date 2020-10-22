@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import json
-from netCDF4 import Dataset
+from netCDF4 import Dataset,chartostring
 from s3netcdfapi import S3NetCDFAPI
 import binpy
 
@@ -34,7 +34,7 @@ def test_table():
   # Test Elem
   obj=netcdf2d.prepareInput({"variable":"elem"})
   df=export.to_table(obj,getData(netcdf2d,obj))
-  print(df)
+  
   
   
   # Test 2
@@ -147,7 +147,20 @@ def test_netcdf():
     np.testing.assert_array_equal(src_file.variables['time'][:].astype("datetime64[s]"),np.array(['2000-01-01T00','2000-01-01T01'],dtype="datetime64[h]"))
     np.testing.assert_array_almost_equal(src_file.variables['x'][:],[-160.0,-159.9,-159.8],5)
     np.testing.assert_array_almost_equal(src_file.variables['y'][:],[40.0,40.0,40.0])
-    np.testing.assert_array_almost_equal(src_file.variables['u'][:],[[0.,1.,2.],[10302.,10303.,10304.]])  
+    np.testing.assert_array_almost_equal(src_file.variables['u'][:],[[0.,1.,2.],[10302.,10303.,10304.]])
+    
+  obj=netcdf2d.prepareInput({"variable":"spectra","isnode":[0],"itime":[0,1]})
+  export.to_netcdf(obj,getData(netcdf2d,obj))
+  
+  with Dataset(obj["filepath"]+".nc", "r") as src_file:
+    np.testing.assert_array_equal(src_file.variables['time'][:].astype("datetime64[s]"),np.array(['2000-01-01T00','2000-01-01T01'],dtype="datetime64[h]"))
+    np.testing.assert_array_equal(src_file.variables['x'][:],[-160.0])
+    np.testing.assert_array_equal(src_file.variables['y'][:],[40.0])
+    np.testing.assert_array_equal(src_file.variables['freq'][:],netcdf2d["freq",'freq'])
+    np.testing.assert_array_equal(src_file.variables['dir'][:],netcdf2d["dir",'dir'])
+    np.testing.assert_array_equal(src_file.variables['spectra'][:],netcdf2d["spc",'spectra',0,:2])
+    np.testing.assert_array_equal(chartostring(src_file.variables['stationname'][:].astype("S1")),netcdf2d["station",'name',0])
+    np.testing.assert_array_equal(src_file.variables['stationid'][:],netcdf2d["snode",'stationid',0])
 
 def test_slf():
   obj=netcdf2d.prepareInput({"export":"slf","variable":"u,v","inode":[0,1,2],"itime":[0,1]})
@@ -167,7 +180,7 @@ def test_binary():
   export.to_binary(netcdf2d,obj,getData(netcdf2d,obj))
   with open(obj["filepath"]+".bin","rb") as f:results=binpy.read(f)
   np.testing.assert_array_equal(results['time'],netcdf2d['time','time'])
-  print(results['time'])
+  
   
   obj=netcdf2d.prepareInput({"export":"bin","variable":"freq"})
   export.to_binary(netcdf2d,obj,getData(netcdf2d,obj))
@@ -220,11 +233,11 @@ def test_binary():
 
 
 if __name__ == "__main__":
-  test_table()
+  # test_table()
   # test_csv()
   # test_json()
   # test_geojson()
-  # test_netcdf()
+  test_netcdf()
   # test_binary()
   
   # test_slf()

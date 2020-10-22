@@ -11,8 +11,7 @@ def to_netcdf(obj,data):
     
     for i,dim in enumerate(variable['dimensions']):
       dimensions[dim]=variable['data'].shape[i]
-    
-     
+
     dimData=variable['dimData']
     for dName in variable['dimData']:
       _dimData=dimData[dName]
@@ -20,8 +19,11 @@ def to_netcdf(obj,data):
         subData=_dimData['subdata']
         for subdim in subData:
           subdata=subData[subdim]
+           
           subdata['name']=subdim
           variables=prepareData(variables,subdata)
+          dimensions=getOtherDimensions(dimensions,subdata)
+          
       else:
         _dimData['name']=dName
         variables=prepareData(variables,_dimData)
@@ -33,11 +35,22 @@ def to_netcdf(obj,data):
   createNetCDF(filepath,metadata={"title":""},dimensions=dimensions,variables=variables)
   return filepath
 
-def prepareData(obj,variable):
+def prepareData(variables,variable):
   meta=variable['meta']
   meta['data']=variable['data']
-  obj[variable['name']]=meta
-  return obj
+  variables[variable['name']]=meta
+ 
+  
+  return variables
+
+def getOtherDimensions(dimensions,variable):
+  for dim in variable['meta']['dimensions']:
+    if not dim in dimensions:
+      if dim=="nchar":
+        dimensions[dim]=16
+      else:
+        dimensions[dim]=len(variable['data'])
+  return dimensions
 
 # def prepareData(obj,variable):
 #   meta=variable['meta']
