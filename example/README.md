@@ -2,15 +2,23 @@
 
 <!-- TOC depthFrom:2 -->
 
-- [overview](#Overview)
-- [basic usage](#Basic-usage)
-	- [query structure](#Query-structure)
-	- [examples](#Examples)
-		- [using the browser](#Using-a-browser)
-		- [using python](#Using-Python)
-		- [using matlab](#Using-MATLAB)
-- [usage limits](#Usage-limits)
-- [errors](#Errors)
+[Overview](#overview)
+
+[Basic usage](#basic-usage)
+
+- [query structure](#query-structure)
+
+- [examples](#examples-and-outputs)
+
+	- [using the browser](#using-the-browser)
+
+	- [using python](#using-python)
+
+	- [using matlab](#using-matlab)
+
+[usage limits](#usage-limits)
+
+[errors](#errors)
 
 <!-- /TOC -->
 
@@ -29,6 +37,7 @@ To download BCSWANv5 data, no credentials, access keys or passwords are necessar
 The URL has two parts. The first half of the URL is the S3 address (AWS S3 bucket location), and the other half is the query (after the question mark):
 
 S3 address:  ```https://api.meracan.ca/?```
+
 example query:  ```variable=hs&inode=0:6&itime=2&export=csv```
 
 The query is where parameters, variable names, indices, and export format are specified. An empty query (or putting gibberish after the question mark) will return a json object containing information about the swan data. This ‘default’ dump of meta data can be used as a reference for querying the data, and includes things like variable and parameter names, dimensions for them, maximum and minimum start and end times, et cetera:
@@ -42,23 +51,37 @@ In the example query above, there are four parameters separated by ‘&’ symbo
 The format is specified with ```export```. If ```export``` is not specified in the query, the default export format is json:
 
 **```export=```**
+
 ```json```	javascript object notation (default)
+
 ```geojson```	geojson
+
 ```csv```	comma-separated values
+
 ```bin```	binary
+
 ```nc```	netcdf
+
 ```mat```	matlab
+
 ```tri```	tri
+
 ```slf```	selafin
+
 ```shp```	shapefile
 
 For the coordinates, the inode and itime (node index and time index) can be specified, and both work the same way. A range of indices can be specified using a colon. Or, a list of particular nodes, not necessarily in order, using square brackets ```[]```:
 
-**```inode=```** or **```itime=```**    
+**```inode=```** or **```itime=```**
+
 ```999```	index 999
+
 ```0:5```	first 5 indices (0, 1, 2, 3, and 4)
+
 ```3000:```	all indices starting from 3000
+
 ```:17```	indices 0 to 16
+
 ```[20, 26, 25]```	indices 20, 25, and 26
 
 At least one of either node or time must be specified. Otherwise, the query will try to download too much data and the API will return an error. (see Errors section below)
@@ -66,9 +89,13 @@ At least one of either node or time must be specified. Otherwise, the query will
 Instead of node indices, latitude and longitude coordinates may be specified. Longitude can be given as either ```x```, ```lon```, or ```latitude```, and latitude as any of ```y```, ```lat```, or ```latitude```:
 
 ```x=-130&y=53```	53°N (latitude), -130°E (longitude) 
+
 ```x=-130.05&y=53.6```	53.6°N, -130.05°E
+
 ```x=-129,-130&y=53,53```	(53°N, -129°E) and (53°N, -130°E)
+
 ```lon=-130&lat=53```	53°N, -130°E
+
 ```longitude=-130&latitude=53```	53°N, -130°E
 
 If the exact coordinates are not part of the dataset, it will interpolate and find the closest one (the more precise the better). Multiple nodes can be specified, as long as the number of longitudes and latitudes are balanced. Note that in the BCSWANv5 dataset the longitude is always negative.
@@ -76,9 +103,13 @@ If the exact coordinates are not part of the dataset, it will interpolate and fi
 Instead of time indices, a start and end time may be given. Both the start and end time are required if this format is used. The time format is Year, month, day, and then the hour separated by the letter T (```YYYY-MM-DDTHH:MM:SS```):
  
 **```start=```**  and  **```end=```**
+
 ```2011-02-28T13:00:00```	28th of February at 1 pm
+
 ```2010-01-28T09```	28th of January at 9 am
+
 ```2010-01-28```	28th of January at 12 am
+
 ```2010-01-28T2```	28th of January at 2 am
 
 Depending on the temporal resolution, the minutes and seconds may also be specified. The time step is per hour in the BCSWANv5 dataset.
@@ -182,8 +213,8 @@ with ```export=geojson``` :
       "longitude,degrees_east": -125.907,
       "latitude,degrees_north": 49.153,
       "u10,m/s": -0.684984982,
-…
 ```
+...
 
 ---
 ```variable=u10,v10&start=2008-07-01T12&end=2008-07-01T14&x=-125.907&y=49.153&export=csv```
@@ -244,7 +275,9 @@ For spectra data, frequencies and direction dimensions don’t have to be specif
      "8": 6, "9": 6, "10": 6, "11": 6,
      "12": 6, "13": 6, "14": 6, "15": 6,
      "16": 6, "17": 7, "18": 7, "19": 7,
-      ...
+```
+...
+```json
      "256": 23, "257": 24, "258": 25, 
      "259": 26, "260": 27
    }
@@ -299,6 +332,7 @@ https://api.meracan.ca/?variable=hs&inode=0&start=2004-07-01&end=2004-08-01&expo
 The ```urllib``` library helps encode a URL string. The ```pandas``` package is used to read from the given URL input and download the data (a “dataframe”, or ```df```, in pandas) into a csv file or table. Once the data is downloaded, a plot can be generated with ```matplotlib```’s  ```pyplot``` submodule.  ```plt.plot(t,y)``` creates a plot of the wave-height ```y``` as a function of time ```t```, taken from the two columns “hs,m” and “Datetime” from the csv table, respectively. The rest of the script is just labelling and formatting.
 
 Result:
+
 ![](images/hs_plot_python.png)
 
 ---
@@ -336,7 +370,8 @@ URL:
 https://api.meracan.ca/?variable=lon,lat,bed&inode=:10000&export=csv
 
 The result creates a scatterplot:
-![](images/lon_lat_bath.png)
+
+![](images/lon_lat_bath_python.png)
 
 ### using MATLAB
 
@@ -362,6 +397,7 @@ URL:
 https://api.meracan.ca/?variable=slon,slat,stationid
 
 Result:
+
 ![](images/snode_locations.png)
 
 ---
@@ -392,6 +428,7 @@ URL:
 https://api.meracan.ca/?variable=u10,v10&itime=7590&inode=:50000
 
 Result:
+
 ![](images/wind.png)
 
 ![](images/wind_zoom.png)
@@ -446,6 +483,7 @@ grid on;
 ```
 
 Result:
+
 ![](images/hs_plot_matlab.png)
 
 ## Usage Limits
