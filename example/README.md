@@ -27,7 +27,7 @@
 
 This user manual shows how to create URL queries that will download data from Amazon Web Service’s cloud storage (AWS S3). s3-netcdf-api is software that allows users to download spatial or temporal datasets (stored on S3 as “partitioned” NetCDF fies) back from the cloud. Examples given will demonstrate how to format various URL queries, as well as some MATLAB and Python scripts to extract and plot the datasets. The example dataset used in this document is a wave hind-cast data from the west coast of BC (BCSWANv5).
 
-![](images/flow-s3-netdf-api.png)
+![](images/flow-s3-netcdf-api.png)
 
 Downloading data involves creating a structured URL and using it in either a script that is run or directly in a web browser search bar. A python script runs in AWS Lambda as an intermediate step, but this is done behind the scenes with the end result returned to the user either as a saved file or displayed on the browser page.
 
