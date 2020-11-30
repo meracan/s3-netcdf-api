@@ -50,6 +50,8 @@ In the example query above, there are four parameters separated by ‘&’ symbo
 
 ```variable``` is a required parameter. The ```group``` can also be specified but it is not necessary, as long as at least one variable is given--the variable in the query automatically selects the group and downloads the corresponding partition files.
 
+---
+#### export and format
 The format is specified with ```export```. If ```export``` is not specified in the query, the default export format is json:
 
 **```export=```**
@@ -72,6 +74,8 @@ The format is specified with ```export```. If ```export``` is not specified in t
 
 ```shp```	shapefile
 
+---
+#### inode and itime indices
 For the coordinates, the inode and itime (node index and time index) can be specified, and both work the same way. A range of indices can be specified using a colon. Or, a list of particular nodes, not necessarily in order, using square brackets ```[]```:
 
 **```inode=```** or **```itime=```**
@@ -88,6 +92,8 @@ For the coordinates, the inode and itime (node index and time index) can be spec
 
 At least one of either node or time must be specified. Otherwise, the query will try to download too much data and the API will return an error. (see Errors section below)
 
+---
+#### longitude and latitude
 Instead of node indices, latitude and longitude coordinates may be specified. Longitude can be given as either ```x```, ```lon```, or ```latitude```, and latitude as any of ```y```, ```lat```, or ```latitude```:
 
 ```x=-130&y=53```	53°N (latitude), -130°E (longitude) 
@@ -102,6 +108,8 @@ Instead of node indices, latitude and longitude coordinates may be specified. Lo
 
 If the exact coordinates are not part of the dataset, it will interpolate and find the closest one (the more precise the better). Multiple nodes can be specified, as long as the number of longitudes and latitudes are balanced. Note that in the BCSWANv5 dataset the longitude is always negative.
 
+---
+#### start and end times
 Instead of time indices, a start and end time may be given. Both the start and end time are required if this format is used. The time format is Year, month, day, and then the hour separated by the letter T (```YYYY-MM-DDTHH:MM:SS```):
  
 **```start=```**  and  **```end=```**
@@ -116,7 +124,7 @@ Instead of time indices, a start and end time may be given. Both the start and e
 
 Depending on the temporal resolution, the minutes and seconds may also be specified. The time step is per hour in the BCSWANv5 dataset.
 
-
+---
 ## examples and outputs
 ### using the browser
 
