@@ -17,7 +17,7 @@ def matplotlib_spectra_example():
     
     # Download data
     start='2008-12-06T01'
-    end='2008-12-07T01'
+    end='2008-12-06T02'
     x=-125.55
     y=48.92
     url="https://api.meracan.ca?variable=spectra&export=netcdf&start={}&end={}&x={}&y={}".format(start,end,x,y)
@@ -32,6 +32,7 @@ def matplotlib_spectra_example():
     x=nc.variables['x'][:]
     y=nc.variables['y'][:]
     freq=nc.variables['freq'][:]
+    
     dir=nc.variables['dir'][:]
     spectra=nc.variables['spectra'][:] # shape(node,time,freq,dir)
     stationName=chartostring(nc.variables['stationname'][:].astype("S1"))

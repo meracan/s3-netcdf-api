@@ -5,6 +5,7 @@ import json
 from netCDF4 import Dataset,chartostring
 from s3netcdfapi import S3NetCDFAPI
 import binpy
+import scipy.io as sio
 
 from s3netcdfapi.data import getData
 import s3netcdfapi.export as export
@@ -121,6 +122,7 @@ def test_json():
   # Test 1
   obj=netcdf2d.prepareInput({"variable":"u,v","inode":[0,1,2],"itime":[0,1]})
   export.to_json(obj,getData(netcdf2d,obj))
+  
   df=pd.read_json(obj['filepath']+".json")
   np.testing.assert_array_almost_equal(df['Longitude'].values,[-160.0,-159.9,-159.8,-160.0,-159.9,-159.8],5)
   np.testing.assert_array_almost_equal(df['Latitude'].values,[40.0,40.0,40.0,40.0,40.0,40.0],5)
@@ -161,6 +163,33 @@ def test_netcdf():
     np.testing.assert_array_equal(src_file.variables['spectra'][:],netcdf2d["spc",'spectra',0,:2])
     np.testing.assert_array_equal(chartostring(src_file.variables['stationname'][:].astype("S1")),netcdf2d["station",'name',0])
     np.testing.assert_array_equal(src_file.variables['stationid'][:],netcdf2d["snode",'stationid',0])
+
+def test_mat():
+
+  # Test 1
+  obj=netcdf2d.prepareInput({"variable":"u,v","inode":[0,1,2],"itime":[0,1]})
+  
+  export.to_mat(obj,getData(netcdf2d,obj))
+  
+  mat=sio.loadmat(obj["filepath"]+".mat")
+  np.testing.assert_array_equal(np.squeeze(mat['time'].astype("datetime64[s]")),np.array(['2000-01-01T00','2000-01-01T01'],dtype="datetime64[h]"))
+  np.testing.assert_array_almost_equal(np.squeeze(mat['x']),[-160.0,-159.9,-159.8],5)
+  np.testing.assert_array_almost_equal(np.squeeze(mat['y']),[40.0,40.0,40.0])
+  np.testing.assert_array_almost_equal(mat['u'],[[0.,1.,2.],[10302.,10303.,10304.]])
+    
+  obj=netcdf2d.prepareInput({"variable":"spectra","isnode":[0],"itime":[0,1]})
+  export.to_mat(obj,getData(netcdf2d,obj))
+  
+  mat=sio.loadmat(obj["filepath"]+".mat")
+  np.testing.assert_array_equal(np.squeeze(mat['time'].astype("datetime64[s]")),np.array(['2000-01-01T00','2000-01-01T01'],dtype="datetime64[h]"))
+  np.testing.assert_array_equal(np.squeeze(mat['x']),[-160.0])
+  np.testing.assert_array_equal(np.squeeze(mat['y']),[40.0])
+  np.testing.assert_array_equal(np.squeeze(mat['freq']),netcdf2d["freq",'freq'])
+  np.testing.assert_array_equal(np.squeeze(mat['dir']),netcdf2d["dir",'dir'])
+  np.testing.assert_array_equal(mat['spectra'],netcdf2d["spc",'spectra',0,:2])
+  # np.testing.assert_array_equal(np.squeeze(mat['stationname']),netcdf2d["station",'name',0]) #TODO: Matlab add empty space
+  np.testing.assert_array_equal(np.squeeze(mat['stationid']),netcdf2d["snode",'stationid',0])
+  
 
 def test_slf():
   obj=netcdf2d.prepareInput({"export":"slf","variable":"u,v","inode":[0,1,2],"itime":[0,1]})
@@ -235,9 +264,10 @@ def test_binary():
 if __name__ == "__main__":
   # test_table()
   # test_csv()
-  # test_json()
+  test_json()
   # test_geojson()
-  test_netcdf()
+  # test_netcdf()
+  # test_mat()
   # test_binary()
   
   # test_slf()

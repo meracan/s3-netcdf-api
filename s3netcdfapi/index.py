@@ -7,6 +7,7 @@ def handler(event, context):
   # print(event);
   try:
     if event is None:event={}
+    
     parameters =  event.get("queryStringParameters",{})
     pathParameters=event.get("pathParameters",{})
     if parameters is None:parameters={}
@@ -16,6 +17,7 @@ def handler(event, context):
     credentials = getCredentials(event)
     
     headers=event.get("headers",{})
+    if headers is None:headers={}
     host=headers.get("Host","")
     requestContext=event.get("requestContext",{})
     stage=requestContext.get("stage","")

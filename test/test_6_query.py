@@ -1,7 +1,7 @@
 from s3netcdfapi import S3NetCDFAPI
 import pandas as pd
 
-def test_query():
+def test_query_SWANv5():
     
     # print(netcdf2d.run({"id":"input1","export":"csv","variable":"u,v","x":-160.0,"y":40.0,"itime":[0,1]}))
     # print(netcdf2d.run({}))
@@ -26,14 +26,19 @@ def test_query():
     # print(netcdf2d.run({"export":"csv","variable":"hs","x":-160.0,"y":0,"itime":0,"inter.mesh":"linear"}))
     
     
-    print(netcdf2d.run({"export":"csv","variable":"spectra","x":-125.55,"y":48.92,"start":"2010-02-02T02","end":"2010-02-02T02"}))
-    
+    # print(netcdf2d.run({"export":"csv","variable":"spectra","x":-125.55,"y":48.92,"start":"2010-02-02T02","end":"2010-02-02T02"}))
+    print(netcdf2d.run({"variable":"time"}))
     
     # print(netcdf2d.run({"export":"bin","variable":"elem"}))
     # print(netcdf2d.run({}))
-    
+
+def test_query_POLAR():
+    netcdf2d=S3NetCDFAPI.init({"id":"netcdf","bucket":"meracan-polar","localOnly":False},{})
+    # print(netcdf2d.run({}))
+    print(netcdf2d.run({"export":"csv","variable":"fs","inode":271608}))
     
     
 if __name__ == "__main__":
-  test_query()
+  # test_query_SWANv5()
+  test_query_POLAR()
   

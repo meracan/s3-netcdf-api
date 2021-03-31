@@ -155,12 +155,14 @@ class S3NetCDFAPI(NetCDF2D):
     parameters[xname]={'extent':[float(np.min(x)),float(np.max(x))]}
     parameters[yname]={'extent':[float(np.min(y)),float(np.max(y))]}
     
-    sxname=self.spectral['sx']
-    syname=self.spectral['sy']
-    sx=self.query({'variable':sxname})
-    sy=self.query({'variable':syname})
-    parameters[sxname]={'extent':[float(np.min(sx)),float(np.max(sx))]}
-    parameters[syname]={'extent':[float(np.min(sy)),float(np.max(sy))]}    
+    
+    # TODO: only for BCSWAN
+    # sxname=self.spectral['sx']
+    # syname=self.spectral['sy']
+    # sx=self.query({'variable':sxname})
+    # sy=self.query({'variable':syname})
+    # parameters[sxname]={'extent':[float(np.min(sx)),float(np.max(sx))]}
+    # parameters[syname]={'extent':[float(np.min(sy)),float(np.max(sy))]}    
     
     timename=self.temporal['time']
     time=self.query({'variable':timename})

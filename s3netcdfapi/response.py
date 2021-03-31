@@ -13,6 +13,7 @@ def response(ContentType,Body):
       'statusCode': 200,
       'headers': {
         "Content-Type": ContentType,
+        'Cache-Control':"max-age=31536000",
         "Access-Control-Allow-Origin": "*",
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Expose-Headers': 'Content-Type',
@@ -37,6 +38,7 @@ def responseSignedURL(signedUrl,origin=None):
   		"Location": signedUrl,
   		# "Access-Control-Allow-Origin": origin,
   		"Access-Control-Allow-Origin": "*",
+  		'Cache-Control':"max-age=86400",
   		'Access-Control-Allow-Headers': 'Content-Type',
   		'Access-Control-Expose-Headers': 'Content-Type',
   		# "Access-Control-Allow-Credentials": "true",
