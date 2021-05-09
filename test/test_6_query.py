@@ -1,44 +1,74 @@
-from s3netcdfapi import S3NetCDFAPI
+import pytest
+import os
 import pandas as pd
+import base64
+import gzip
+import io
+import numpy as np
+import json
+import time
 
-def test_query_SWANv5():
-    
-    # print(netcdf2d.run({"id":"input1","export":"csv","variable":"u,v","x":-160.0,"y":40.0,"itime":[0,1]}))
-    # print(netcdf2d.run({}))
-    
-    netcdf2d=S3NetCDFAPI.init({"id":"SWANv5","bucket":"uvic-bcwave","localOnly":False},{})
-    
-    # Elem
-    # df = pd.read_csv("https://api.meracan.ca?variable=elem&export=csv")
-    # print(netcdf2d.run({"export":"csv","variable":"spectra","station":"beverly","itime":[0,1]}))
-    # 1 variable
-    # print(netcdf2d.run({"export":"csv","variable":"hs","inode":0,"itime":[0,1]}))
-    # print(netcdf2d.run({"export":"csv","variable":"hs","inode":[0,1],"itime":[0,1]}))
-    # print(netcdf2d.run({"export":"csv","variable":"hs","itime":0}))
-    # print(netcdf2d.run({"export":"csv","variable":"hs","inode":0}))
-    # print(netcdf2d.run({"export":"csv","variable":"hs","x":-136.7264224,"y":57.39504017,"itime":[0,1,2,3,4,5]}))
-    # print(netcdf2d.run({"export":"csv","variable":"hs","x":[-136.7264224,-135.0],"y":[57.39504017,57.],"itime":[0,1,2,3,4,5]}))
-    # print(netcdf2d.run({"export":"csv","variable":"hs","inode":0,"start":"2014-01-01","end":"2014-01-10"}))
-    
-    # Error testing
-    # print(netcdf2d.run({"export":"csv","variable":"hs","inode":0,"start":"2003-01-01","end":"2019-01-10"}))
-    # print(netcdf2d.run({"export":"csv","variable":"hs","inode":0,"start":"2016-01-01","end":"2019-01-10"}))
-    # print(netcdf2d.run({"export":"csv","variable":"hs","x":-160.0,"y":0,"itime":0,"inter.mesh":"linear"}))
-    
-    
-    # print(netcdf2d.run({"export":"csv","variable":"spectra","x":-125.55,"y":48.92,"start":"2010-02-02T02","end":"2010-02-02T02"}))
-    print(netcdf2d.run({"variable":"time"}))
-    
-    # print(netcdf2d.run({"export":"bin","variable":"elem"}))
-    # print(netcdf2d.run({}))
+from s3netcdfapi import S3NetCDFAPI
+from s3netcdfapi.index import handler
+from projects.uvicswan import uvicswan_queries
 
-def test_query_POLAR():
-    netcdf2d=S3NetCDFAPI.init({"id":"netcdf","bucket":"meracan-polar","localOnly":False},{})
-    # print(netcdf2d.run({}))
-    print(netcdf2d.run({"export":"csv","variable":"fs","inode":271608}))
+
+def test_query():
+  input={"name":"s3netcdfapi_test","cacheLocation":"../s3","localOnly":True,"verbose":True,"maxPartitions":40,"autoRemove":False}
+  with S3NetCDFAPI(input) as netcdf:
+    response=netcdf.run({"id":"s3netcdfapi_test"})
+    assert json.loads(response['body'])['id']=="s3netcdfapi_test"
     
+    response=netcdf.run({"id":"s3netcdfapi_test","export":"csv","variable":"u,v","x":-160.0,"y":40.0,"itime":[0,1]})
+    df=pd.read_csv(io.BytesIO(gzip.decompress(base64.b64decode(response['body']))))
+    np.testing.assert_array_equal(df['Latitude'].values,[40.0,40.0])
+
+def test_UVICSWAN(name="SWANv5"):
+  input={"name":name,"bucket":"uvic-bcwave","cacheLocation":"../s3","localOnly":False,"verbose":True,"maxPartitions":40,"autoRemove":False,}
+  with S3NetCDFAPI(input) as netcdf:
+    response=netcdf.run({})
+    print(response)
+    for query in uvicswan_queries:
+      start=time.time()
+      print(query)
+      response=netcdf.run(query)
+      assert response['statusCode']==200         
+      print(time.time()-start)
+      
+    
+class Context(object):
+  def __init__(self):
+    self.aws_request_id="TESTID"
+context=Context()
+
+def test_handler():
+  os.environ['AWS_DEBUG']="True"
+  os.environ['AWS_CACHE']=r"../s3"
+  
+  assert json.loads(handler({},context)['body'])['Error']=="Api needs a model id"
+  assert json.loads(handler({"pathParameters":{"id":"s3netcdfapi_test"}},context)['body'])['id']=='s3netcdfapi_test'
+  
+  response=handler({"pathParameters":{"id":"s3netcdfapi_test"},"queryStringParameters":{"export":"csv","variable":"u,v","x":-160.0,"y":40.0,"itime":[0,1]}},context)
+  df=pd.read_csv(io.BytesIO(gzip.decompress(base64.b64decode(response['body']))))
+  np.testing.assert_array_equal(df['Latitude'].values,[40.0,40.0])
+
+def test_handler_UVICSWAN(name="SWANv5"):
+  os.environ['AWS_DEBUG']="True"
+  os.environ['AWS_CACHE']=r"../s3"
+  
+  assert json.loads(handler({},context)['body'])['Error']=="Api needs a model id"
+  assert json.loads(handler({"pathParameters":{"id":name}},context)['body'])['id']==name
+  
+  response=handler({"pathParameters":{"id":name},"queryStringParameters":{"export":"csv","variable":"time"}},context)
+  df=pd.read_csv(io.BytesIO(gzip.decompress(base64.b64decode(response['body']))))
+  print(df)
+  
+   
     
 if __name__ == "__main__":
-  # test_query_SWANv5()
-  test_query_POLAR()
-  
+  test_query()
+  test_handler()
+  # test_UVICSWAN("SWANv5")
+  # test_UVICSWAN("SWANv6")
+  # test_handler_UVICSWAN("SWANv5")
+  # test_handler_UVICSWAN("SWANv6")

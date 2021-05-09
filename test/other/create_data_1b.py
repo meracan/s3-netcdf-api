@@ -1,5 +1,5 @@
 import numpy as np
-from s3netcdf import NetCDF2D
+from s3netcdf import S3NetCDF
 from datetime import datetime
 import sys
 from matplotlib.tri import Triangulation
@@ -34,35 +34,33 @@ def createGrid(xstart=-1,xend=1,xstep=0.1,ystart=-1,yend=1,ystep=0.1):
   return {"xy":xy,"elem":elem}
 
 def main():
-  grid=createGrid(-160.0,-150.0,0.1,40.0,50.0,0.1)
+  grid=createGrid(-160.0,-158.0,0.1,40.0,42.0,0.1)
   x=grid['xy'][:,0]
   y=grid['xy'][:,1]
   elem=grid['elem']
   input = dict(
-    name="input1",
+    name="input1b",
     cacheLocation=r"../s3",
-    localOnly=False,
+    localOnly=True,
     
     bucket="uvic-bcwave",
     cacheSize=10.0,
     ncSize=1.0,
     
     nca = dict(
-      metadata=dict(title="input1",
+      metadata=dict(title="input1b",
       spatial={"x":"x","y":"y","elem":"elem","dim":"nnode"},
       temporal={"time":"time","dim":"ntime"},
       spectral={"sx":"sx","sy":"sy","dim":"nsnode","stationId":"stationid","stationName":"name"}
       ),
       dimensions = dict(
         npe=3,
-        nelem=len(elem),
+        nelem=elem.shape[0],
         nnode=len(x),
-        ntime=1000,
-        nstation=6,
-        nchar=16,
+        ntime=200000,
         nsnode=10,
-        nfreq=33,
-        ndir=36,
+        nfreq=2,
+        ndir=2,
       ),
       groups=dict(
         elem=dict(dimensions=["nelem","npe"],variables=dict(
@@ -78,11 +76,8 @@ def main():
         snode=dict(dimensions=["nsnode"],variables=dict(
           sx=dict(type="f4",units="" ,standard_name="Longitude" ,long_name=""),
           sy=dict(type="f4",units="" ,standard_name="Latitude" ,long_name=""),
-          stationid=dict(type="i4",units="" ,standard_name="Station Id" ,long_name=""),
-          )),
-        station=dict(dimensions=["nstation","nchar"],variables=dict(
-          name=dict(type="S16",units="" ,standard_name="Station Name" ,long_name="")
-          )),
+          feature=dict(type="i4",units="" ,standard_name="Feature" ,long_name=""),
+          )),          
         freq=dict(dimensions=["nfreq"],variables=dict(
           freq=dict(type="f4",units="Hz" ,standard_name="Frequency" ,long_name=""),
           )),
@@ -106,7 +101,7 @@ def main():
     )
   )
   
-  netcdf2d=NetCDF2D(input)
+  netcdf2d=S3NetCDF(input)
   netcdf2d["elem","elem"] = elem
   ntime = np.prod(netcdf2d.groups["time"].shape)
   timevalue = np.datetime64(datetime(2000,1,1))+np.arange(ntime)*np.timedelta64(1, 'h')
@@ -116,15 +111,14 @@ def main():
   nsnode=np.prod(netcdf2d.groups["snode"].shape)
   netcdf2d["snode","sx"] = np.arange(nsnode)*0.1-160.0
   netcdf2d["snode","sy"] = np.arange(nsnode)*0.1+40.0
-  stationids=np.zeros(nsnode,dtype=np.int32)
-  stationids[1]=1
-  stationids[2]=2
-  stationids[3:5]=3
-  stationids[5:7]=4
-  stationids[7:10]=5
-  stationids[10:]=6
-  netcdf2d["snode","stationid"] = stationids
-  netcdf2d["station","name"]=np.array(['a', 'b', 'c','d','e','f'])
+  feature=np.zeros(nsnode,dtype=np.int32)
+  feature[1]=1
+  feature[2]=2
+  feature[3:5]=3
+  feature[5:7]=4
+  feature[7:10]=5
+  feature[10:]=6
+  netcdf2d["snode","feature"] = feature
   
   sshape = netcdf2d.groups["s"].shape
   svalue = np.arange(np.prod(sshape)).reshape(sshape)
@@ -133,9 +127,9 @@ def main():
   netcdf2d["s","v"] = svalue
   netcdf2d["t","u"] = svalue.T
   netcdf2d["t","v"] = svalue.T
-  netcdf2d["freq","freq"] = np.arange(33)/33.0
-  netcdf2d["dir","dir"] = np.arange(36)/36.0
-  netcdf2d["spc","spectra"] = np.arange(10*1000*33*36)/1000000.0
+  netcdf2d["freq","freq"] = np.arange(2)/2.0
+  netcdf2d["dir","dir"] = np.arange(2)/2.0
+  netcdf2d["spc","spectra"] = np.arange(10*200000*2*2)/1000000.0
   
 if __name__ == "__main__":
   main()

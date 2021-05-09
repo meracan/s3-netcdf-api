@@ -38,6 +38,7 @@ def getSpatial(netcdf2d,obj,dname,type='mesh'):
     elif type=="xy":
       if obj['inter.xy']=='nearest':obj=nearestXY(netcdf2d,obj,dname,idname)
       else:raise Exception("Unknown ({}) interpolation for inter.xy".format(obj['inter.xy']))
+  
   return obj
 
 
@@ -95,8 +96,9 @@ def nearest(netcdf2d,obj,idname):
 def nearestXY(netcdf2d,obj,dname,idname):
   """
   """
-  obj['_x']=netcdf2d.query({"variable":netcdf2d.spectral['sx']})
-  obj['_y']=netcdf2d.query({"variable":netcdf2d.spectral['sy']})
+  obj['_x']=netcdf2d.query({"variable":netcdf2d.spectral['x']})
+  obj['_y']=netcdf2d.query({"variable":netcdf2d.spectral['y']})
+  
 
   sxy=np.column_stack((obj['_x'],obj['_y']))
   kdtree = cKDTree(sxy)

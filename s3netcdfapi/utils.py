@@ -28,8 +28,11 @@ def parseParameters(obj,parameters):
   for o in obj:
     default=obj[o]['default']
     type=obj[o]['type']
-    if o=="sep":newobject[o]=parameters.get(o,default)
-    else:newobject[o]=parseParameter(parameters.get(o,default),type)
+    value=parameters.get(o,default)
+    if 'alias' in obj[o]:
+      for name in obj[o]['alias']:
+        value=parameters.get(name,value)
+    newobject[o]=parseParameter(value,type)
   return newobject  
 
 
@@ -58,7 +61,17 @@ def parseString(parameter,t):
     raise Exception("Format needs to be \"{string}\" or \":\" or \"{string}:{string}\" or \"[{string},{string}]\"")
   
   
-def parseParameter(parameter,types=str):
+Types = {
+    'int': int,
+    'float': float,
+    'list': list,
+    'str': str,
+    'slice': slice,
+    'bool':bool
+    # etc
+}
+
+def parseParameter(parameter,types="str"):
   """ Parse index query based on string 
   
   Parameters
@@ -71,10 +84,14 @@ def parseParameter(parameter,types=str):
   """  
   if parameter is None:return None
   
-  if type(types) is not tuple:types=(types,)
+  types=types.split(",")
+  types=[Types[type] for type in types]
+  types=tuple(types)
+  
   t=formatTuple(types)
   
-  if isinstance(parameter,str):parameter=parseString(parameter,t)
+  if parameter!="," and isinstance(parameter,str):parameter=parseString(parameter,t)
+  
   if not list in list(types) and isinstance(parameter,list):
     raise Exception("Parameter {} is not allowed to be a list".format(parameter)) # Test 8
   
@@ -101,5 +118,6 @@ def getIdx(obj,name):
   return (group,variable)
 
 def compress(filePath,outPath):
-  with open(filePath, 'rb') as src, gzip.open(outPath, 'wb') as dst:        
+  with open(filePath, 'rb') as src, gzip.open(outPath, 'wb', compresslevel=4) as dst:        
     dst.writelines(src)
+    

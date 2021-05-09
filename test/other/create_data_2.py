@@ -1,5 +1,5 @@
 import numpy as np
-from s3netcdf import NetCDF2D
+from s3netcdf import S3NetCDF
 from datetime import datetime
 import sys
 from matplotlib.tri import Triangulation
@@ -188,7 +188,7 @@ def main():
     )
   )
   
-  netcdf2d=NetCDF2D(input)
+  netcdf2d=S3NetCDF(input)
   netcdf2d["elem","elem"] = elem
   ntime = np.prod(netcdf2d.groups["time"].shape)
   timevalue = np.datetime64(datetime(2000,1,1))+np.arange(ntime)*np.timedelta64(1, 'h')

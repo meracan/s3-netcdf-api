@@ -17,7 +17,7 @@ def getTemporal(netcdf2d,obj,dname):
     
   elif obj['start'] is not None or obj['end'] is not None:
     obj['user_time']=True
-    vnames=netcdf2d.getVariablesByDimension(dname)
+    # vnames=netcdf2d.getVariablesByDimension(dname)
     
     
     dt=obj['_time']=netcdf2d.query({"variable":netcdf2d.temporal['time']})

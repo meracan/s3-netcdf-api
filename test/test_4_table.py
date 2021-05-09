@@ -8,15 +8,14 @@ from s3netcdfapi.export.table import _getMeta,getMeta,combineValues,dimData2Tabl
 import s3netcdfapi.export as export
 
 input={
-  "name":"input1",
+  "name":"s3netcdfapi_test",
   "cacheLocation":"../s3",
-  "apiCacheLocation":"../s3/tmp",
   "localOnly":True,
   "verbose":True,
   "maxPartitions":40
 }
 
-netcdf2d=S3NetCDFAPI(input)
+
 
 def test__getMeta():
   data={
@@ -28,27 +27,29 @@ def test__getMeta():
   assert _getMeta(data,type="units")=="m"
  
 def test_getMeta():
-  
-  data=_getData(netcdf2d,netcdf2d.prepareInput({"inode":[0,1],"variable":"u"}),"u")
-  dimData=data['dimData']
- 
-  assert getMeta(dimData,"header")==['Longitude','Latitude','Datetime']
-  assert getMeta(dimData,"type")==['float32','float32','float64']
-  assert getMeta(dimData,'header',data,True)['x']=="Longitude"
-  assert getMeta(dimData,'header',data,True)['y']=="Latitude"
-  assert getMeta(dimData,'header',data,True)['time']=="Datetime"
+  with S3NetCDFAPI(input) as netcdf:
+    data=_getData(netcdf,netcdf.prepareInput({"inode":[0,1],"variable":"u"}),"u")
+    dimData=data['dimData']
+   
+    assert getMeta(dimData,"header")==['Longitude','Latitude','Datetime']
+    assert getMeta(dimData,"type")==['f','f','d']
+    assert getMeta(dimData,'header',data,True)['x']=="Longitude"
+    assert getMeta(dimData,'header',data,True)['y']=="Latitude"
+    assert getMeta(dimData,'header',data,True)['time']=="Datetime"
 
 
 def test_combineValues():
-  data=_getData(netcdf2d,netcdf2d.prepareInput({"inode":[0,1],"variable":"u"}),"u")
-  dimData=data['dimData']
-  assert combineValues(dimData['node']['subdata'])[0]=='-160.0,40.0'
- 
+  with S3NetCDFAPI(input) as netcdf:
+    data=_getData(netcdf,netcdf.prepareInput({"inode":[0,1],"variable":"u"}),"u")
+    dimData=data['dimData']
+    assert combineValues(dimData['node']['subdata'])[0]=='-160.0,40.0'
+   
  
 def test_dimData2Table():
-  data=_getData(netcdf2d,netcdf2d.prepareInput({"inode":[0,1],"variable":"u"}),"u")
-  dimData=data['dimData']
-  assert dimData2Table(data['data'],dimData)[0]=='-160.0,40.0,2000-01-01T00:00:00'
+  with S3NetCDFAPI(input) as netcdf:
+    data=_getData(netcdf,netcdf.prepareInput({"inode":[0,1],"variable":"u"}),"u")
+    dimData=data['dimData']
+    assert dimData2Table(data['data'],dimData)[0]=='-160.0,40.0,2000-01-01T00:00:00.000'
   
 
 if __name__ == "__main__":

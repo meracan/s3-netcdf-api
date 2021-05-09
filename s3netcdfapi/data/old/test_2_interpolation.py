@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from s3netcdf import NetCDF2D
+from s3netcdf import S3NetCDF
 import s3netcdfapi.data.interpolation as inter
 
 
@@ -11,7 +11,7 @@ input={
   "verbose":True
 }
 
-netcdf2d=NetCDF2D(input)
+netcdf2d=S3NetCDF(input)
 
 def test_timeSeriesClosest():
     # Test 1

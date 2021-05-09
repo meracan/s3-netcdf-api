@@ -1,44 +1,45 @@
 
-from s3netcdf.netcdf2d_func import createNetCDF
+# from s3netcdf.s3netcdf_func import createNetCDF
+from netcdf import NetCDF
 
-def to_netcdf(obj,data):
+def to_netcdf(obj,data,netcdf3=False):
   
   dimensions={}
   variables={}
   for vname in data:
     variable=data[vname]
     variables=prepareData(variables,variable)
-    
     for i,dim in enumerate(variable['dimensions']):
       dimensions[dim]=variable['data'].shape[i]
 
     dimData=variable['dimData']
-    for dName in variable['dimData']:
-      _dimData=dimData[dName]
-      if _dimData['data'] is None:
-        subData=_dimData['subdata']
-        for subdim in subData:
-          subdata=subData[subdim]
-           
-          subdata['name']=subdim
-          variables=prepareData(variables,subdata)
-          dimensions=getOtherDimensions(dimensions,subdata)
-          
-      else:
-        _dimData['name']=dName
-        variables=prepareData(variables,_dimData)
+    if dimData is not None:
+      for dName in dimData:
+        _dimData=dimData[dName]
+        if _dimData['data'] is None:
+          subData=_dimData['subdata']
+          for subdim in subData:
+            subdata=subData[subdim]
+             
+            subdata['name']=subdim
+            variables=prepareData(variables,subdata)
+            dimensions=getOtherDimensions(dimensions,subdata)
+            
+        else:
+          _dimData['name']=dName
+          variables=prepareData(variables,_dimData)
 
       
-        
-        
   filepath=obj['filepath']+".nc"    
-  createNetCDF(filepath,metadata={"title":""},dimensions=dimensions,variables=variables)
+  NetCDF.create(filepath,metadata={"title":""},dimensions=dimensions,variables=variables,netcdf3=netcdf3)
   return filepath
 
 def prepareData(variables,variable):
-  meta=variable['meta']
-  meta['data']=variable['data']
-  variables[variable['name']]=meta
+  newvariable=variable['meta']
+  newvariable['data']=variable['data']
+  if 'dimensions' in variable:
+    newvariable['dimensions']=variable['dimensions']
+  variables[variable['name']]=newvariable
  
   
   return variables

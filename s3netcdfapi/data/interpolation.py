@@ -18,6 +18,8 @@ def _checkBounds(_datetimes,datetimes):
 def timeSeries(_datetimes,datetimes,_data=None,bounds_error=True,kind='nearest'):
   """
   """
+  _datetimes=_datetimes.astype('datetime64[ms]')
+  datetimes=datetimes.astype('datetime64[ms]')
   if bounds_error:
     _checkBounds(_datetimes,datetimes)
   f = interpolate.interp1d(_datetimes.astype("f8"), _data,kind=kind,axis=0)

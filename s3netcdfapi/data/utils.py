@@ -37,6 +37,8 @@ def swapAxe(data,dimensionNames,name,i=0):
   name:str,name of dimension to be swap
   i:int, index to be swap
   """
+  
+  if data.ndim!=len(dimensionNames):print(data,data.ndim,dimensionNames)
   if data.ndim!=len(dimensionNames):raise Exception("List size should equal to data dimensions")
   index=dimensionNames.index(name)
   data=np.swapaxes(data, i, index) 
@@ -53,6 +55,7 @@ def swapAxes(data,dimensionNames,names,return_dimensions=True):
   dimensionNames:list, name of dimensions.
   names:str,name of dimension to be swap
   """
+  
   for i,name in enumerate(names):
     data,dimensionNames=swapAxe(data,dimensionNames,name,i)
   if return_dimensions:return data,dimensionNames 

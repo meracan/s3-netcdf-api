@@ -1,1 +1,1 @@
-from .s3netcdf2dapi import S3NetCDFAPI
+from .s3netcdfapi import S3NetCDFAPI

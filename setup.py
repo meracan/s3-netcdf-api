@@ -15,7 +15,7 @@ setuptools.setup(
     url="https://github.com/meracan/s3-netcdf-api",
      packages=["s3netcdfapi"],
     install_requires=[
-        
+        "numpy_groupies",
         ],
     classifiers=[
         "Programming Language :: Python :: 3",
