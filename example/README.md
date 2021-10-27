@@ -38,6 +38,8 @@ To download BCSWANv5 data, no credentials, access keys or passwords are necessar
 
 The URL has two parts. The first half of the URL is the S3 address (AWS S3 bucket location), and the other half is the query (after the question mark):
 
+*** (TODO: Update README.md,  also requires the user to specify the dataset or model id, e.g. ```https://api.meracan.ca/SWANv5?``` .)
+
 S3 address:  ```https://api.meracan.ca/?```
 
 example query:  ```variable=hs&inode=0:6&itime=2&export=csv```
