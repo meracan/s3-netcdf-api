@@ -25,7 +25,7 @@
 
 ## Overview
 
-This user manual shows how to create URL queries that will download data from Amazon Web Service’s cloud storage (AWS S3). s3-netcdf-api is software that allows users to download spatial or temporal datasets (stored on S3 as “partitioned” NetCDF fies) back from the cloud. Examples given will demonstrate how to format various URL queries, as well as some MATLAB and Python scripts to extract and plot the datasets. The example dataset used in this document is a wave hind-cast data from the west coast of BC (BCSWANv5).
+This user manual shows how to create URL queries that will download data from Amazon Web Service’s cloud storage (AWS S3). s3-netcdf-api is software that allows users to download spatial or temporal datasets (stored on S3 as “partitioned” NetCDF fies) back from the cloud. Examples given will demonstrate how to format various URL queries, as well as some MATLAB and Python scripts to extract and plot the datasets. The two example datasets used in this document are wave hind-cast data from the west coast of BC (accessed via the names 'SWANv5' and 'SWANv6').
 
 ![](images/flow-s3-netcdf-api.png)
 
@@ -34,23 +34,21 @@ Downloading data involves creating a structured URL and using it in either a scr
 ## Basic Usage
 ### query structure
 
-To download BCSWANv5 data, no credentials, access keys or passwords are necessary and no installation of any software is required. All data is accessed with a URL string, which contains the query parameters needed to download the corresponding data. The URL can be put in the search bar of a web browser, or used in a script that will download the data when the script runs.
+To download BCSWAN data, no credentials, access keys or passwords are necessary and no installation of any software is required. All data is accessed with a URL string, which contains the query parameters needed to download the corresponding data. The URL can be put in the search bar of a web browser, or used in a script that will download the data when the script runs.
 
-The URL has two parts. The first half of the URL is the S3 address (AWS S3 bucket location), and the other half is the query (after the question mark):
+The URL has two parts. The first half of the URL contains the S3 address (AWS S3 bucket location) as well as the name of the dataset, and the other half is the query (after the question mark):
 
-*** (TODO: Update README.md,  also requires the user to specify the dataset or model id, e.g. ```https://api.meracan.ca/SWANv5?``` .)
-
-S3 address:  ```https://api.meracan.ca/?```
+S3 address and dataset or model ID (i.e. 'SWANv5' or 'SWANv6'):  ```https://api.meracan.ca/SWANv5?```
 
 example query:  ```variable=hs&inode=0:6&itime=2&export=csv```
 
 The query is where parameters, variable names, indices, and export format are specified. An empty query (or putting gibberish after the question mark) will return a json object containing information about the swan data. This ‘default’ dump of meta data can be used as a reference for querying the data, and includes things like variable and parameter names, dimensions for them, maximum and minimum start and end times, et cetera:
 
-```https://api.meracan.ca/?variable=hs&inode=0:6&itime=2&export=csv```
+```https://api.meracan.ca/SWANv6?variable=hs&inode=0:6&itime=2&export=csv```
 
 In the example query above, there are four parameters separated by ‘&’ symbols.
 
-```variable``` is a required parameter. The ```group``` can also be specified but it is not necessary, as long as at least one variable is given--the variable in the query automatically selects the group and downloads the corresponding partition files.
+```variable``` is a required parameter. The ```group``` can also be specified but it is not necessary, as long as at least one variable is given--the variable in the query automatically selects the group and downloads the corresponding partitioned files.
 
 ---
 #### export and format
@@ -232,7 +230,7 @@ with ```export=geojson``` :
 ```variable=u10,v10&start=2008-07-01T12&end=2008-07-01T14&x=-125.907&y=49.153&export=csv```
 with  ```export=csv``` :
 
-```json
+```
 Datetime,"longitude,degrees_east","latitude,degrees_north","u10,m/s","v10,m/s"
 2008-07-01T12:00:00,-125.907,49.153,-0.8487115,1.3232467
 2008-07-01T13:00:00,-125.907,49.153,-0.684985,1.3830788
@@ -243,7 +241,7 @@ Datetime,"longitude,degrees_east","latitude,degrees_north","u10,m/s","v10,m/s"
 ```variable=spectra&itime=1220&station=beverly&export=csv```
 Spectra data at station beverly (Amphitrite buoy) at time index 1220:
 
-```json
+```
 "longitude,degrees_east","latitude,degrees_north",Station Id,Name,Datetime,"absolute frequency,Hz","spectral nautical directions,degrees","spectra,m2/Hz/degr"
 -125.633949,48.883999,0,beverly,2004-02-20T20:00:00,0.0345,265.0,1.3319053e-05
 -125.633949,48.883999,0,beverly,2004-02-20T20:00:00,0.0345,255.0,1.3319053e-05
@@ -280,7 +278,7 @@ For spectra data, frequencies and direction dimensions don’t have to be specif
 
 ---
 ```variable=stationid``` Station ids for spectra nodes:
-```json
+```
 { "Station Id": {
      "0": 0, "1": 1, "2": 2, "3": 3,
      "4": 4, "5": 5, "6": 6, "7": 6,
@@ -289,7 +287,7 @@ For spectra data, frequencies and direction dimensions don’t have to be specif
      "16": 6, "17": 7, "18": 7, "19": 7,
 ```
 ...
-```json
+```
      "256": 23, "257": 24, "258": 25, 
      "259": 26, "260": 27
    }
@@ -316,7 +314,7 @@ from urllib.parse import urlencode, unquote
 
 pd.plotting.register_matplotlib_converters() # avoids warning
 
-address = "https://api.meracan.ca/?"
+address = "https://api.meracan.ca/SWANv6?"
 query = urlencode({
   "export":"csv", 
   "variable":"hs", 
@@ -339,7 +337,7 @@ plt.show()
 ```
 
 URL:
-https://api.meracan.ca/?variable=hs&inode=0&start=2004-07-01&end=2004-08-01&export=csv
+https://api.meracan.ca/SWANv6?variable=hs&inode=0&start=2004-07-01&end=2004-08-01&export=csv
 
 The ```urllib``` library helps encode a URL string. The ```pandas``` package is used to read from the given URL input and download the data (a “dataframe”, or ```df```, in pandas) into a csv file or table. Once the data is downloaded, a plot can be generated with ```matplotlib```’s  ```pyplot``` submodule.  ```plt.plot(t,y)``` creates a plot of the wave-height ```y``` as a function of time ```t```, taken from the two columns “hs,m” and “Datetime” from the csv table, respectively. The rest of the script is just labelling and formatting.
 
@@ -357,7 +355,7 @@ from urllib.parse import urlencode, unquote
 
 pd.plotting.register_matplotlib_converters()
 
-address = "https://api.meracan.ca/?"
+address = "https://api.meracan.ca/SWANv6?"
 query = urlencode({
   "export":"csv", 
   "variable":"lon,lat,bed", 
@@ -379,7 +377,7 @@ plt.show()
 ```
 
 URL:
-https://api.meracan.ca/?variable=lon,lat,bed&inode=:10000&export=csv
+https://api.meracan.ca/SWANv6?variable=lon,lat,bed&inode=:10000&export=csv
 
 The result creates a scatterplot:
 
@@ -389,7 +387,7 @@ The result creates a scatterplot:
 
 The spectra node (‘snodes’) locations can be plotted with the following example. A scatter plot uses the stationid to determine colour:
 ```matlab
-url = 'https://api.meracan.ca/';
+url = 'https://api.meracan.ca/SWANv6?';
 sdata = 'slon,slat,stationid';
  
 data = webread(url, 'variable', sdata);
@@ -406,16 +404,16 @@ grid on;
 ```
 
 URL:
-https://api.meracan.ca/?variable=slon,slat,stationid
+https://api.meracan.ca/SWANv6?variable=slon,slat,stationid
 
 Result:
 
 ![](images/snode_locations.png)
 
 ---
-A quiver plot can be created with the longitude and latitude coordinates and the x and y components of the wind velocity, u10 and v10. This example shows the wind velocity for the first 50000 nodes:
+A quiver plot can be created with the longitude and latitude coordinates and the x and y components of the wind velocity, u10 and v10 (Wind data is available in the SWANv5 model). This example shows the wind velocity for the first 50000 nodes:
 ```matlab
-url = 'https://api.meracan.ca/';
+url = 'https://api.meracan.ca/SWANv5?';
 vars = 'u10,v10';
 itime = '7590';
 inode = ':50000';
@@ -437,7 +435,7 @@ ylabel('latitude', 'FontSize', 20);
 grid on;
 ```
 URL:
-https://api.meracan.ca/?variable=u10,v10&itime=7590&inode=:50000
+https://api.meracan.ca/SWANv5?variable=u10,v10&itime=7590&inode=:50000
 
 Result:
 
@@ -448,7 +446,7 @@ Result:
 ---
 This example plots the significant wave height from the first node (index 0) in the dataset for a month:
 ```matlab
-url = 'https://api.meracan.ca/?';
+url = 'https://api.meracan.ca/SWANv6?';
 var = 'hs';
 x = -136.7264224;
 y = 57.39504017;
@@ -469,7 +467,7 @@ ylabel('wave height (HS), in metres', 'FontSize', 20);
 grid on;
 ```
 URL:
-https://api.meracan.ca/?variable=hs&x=-136.7264224&y=57.39504017&start=2004-01-01&end=2004-02-01
+https://api.meracan.ca/SWANv6?variable=hs&x=-136.7264224&y=57.39504017&start=2004-01-01&end=2004-02-01
 
 The example below shows the same data as above, but loads and plots the data directly from the corresponding SWAN file itself rather than using a URL to download from the cloud:
 ```matlab
